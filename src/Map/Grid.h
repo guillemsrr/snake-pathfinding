@@ -9,7 +9,10 @@
 class Grid
 {
 public:
-    Cell* GetCell(uvec3 position);
+    Grid();
+    ~Grid();
+
+    Cell* GetCell(uvec3 position) const;
     void SetDimensions(uvec3 dimensions);
 
     uvec3 GetDimensions() const
@@ -22,10 +25,14 @@ public:
         return _cells;
     }
 
+    std::vector<Cell*> GetNeighbors(Cell* cell) const;
+    bool IsLocationValid(uvec3 vec) const;
+
 private:
     std::vector<Cell*> _cells;
 
     uvec3 _dimensions = {};
 
-    glm::u32 Index(uvec3 position) const;
+    glm::u32 GetIndex(uvec3 position) const;
+    uvec3 GetCoords(glm::u32 index) const;
 };

@@ -1,47 +1,44 @@
 ﻿// Copyright (c) Guillem Serra. All Rights Reserved.
 
 #include "Snake.h"
+#include <glm/geometric.hpp>
 
-#include <SDL3/SDL_rect.h>
-
-Snake::Snake()
+Snake::Snake(): _direction()
 {
+    _body.push_back({0, 0, 0});
+}
+
+uvec3 Snake::GetNextHeadLocation() const
+{
+    uvec3 headLocation = GetHeadLocation();
+    headLocation += _direction;
+    return headLocation;
 }
 
 void Snake::Move()
 {
-    auto head = GetHead();
-    int32_t newX = head.x;
-    int32_t newY = head.y;
-    int32_t newZ = head.z;
-
-    /*switch (_direction)
+    if (_direction == uvec3())
     {
-    case SnakeDirection::Right: newX++; break;
-    case SnakeDirection::Up:    newY--; break;
-    case SnakeDirection::Left:  newX--; break;
-    case SnakeDirection::Down:  newY++; break;
-    }*/
+        return;
+    }
 
-    /*if (newX < 0) newX = GAME_WIDTH - 1;
-    if (newX >= GAME_WIDTH) newX = 0;
-    if (newY < 0) newY = GAME_HEIGHT - 1;
-    if (newY >= GAME_HEIGHT) newY = 0;
-    */
+    for (size_t i = _body.size() - 1; i > 0; --i)
+    {
+        _body[i] = _body[i - 1];
+    }
 
-    _body.insert(_body.begin(), {newX, newY, newZ});
-    _body.pop_back();
+    _body[0] = GetNextHeadLocation();
 }
 
 void Snake::Grow()
 {
-    auto tail = _body.back();
+    uvec3 tail = _body.back();
     _body.push_back(tail);
 }
 
 bool Snake::CheckSelfCollision() const
 {
-    const auto& head = GetHead();
+    const auto& head = GetHeadLocation();
     for (size_t i = 1; i < _body.size(); ++i)
     {
         if (head == _body[i])
@@ -52,12 +49,23 @@ bool Snake::CheckSelfCollision() const
     return false;
 }
 
-uvec3 Snake::GetHead() const
+uvec3 Snake::GetHeadLocation() const
 {
-    if (_body.empty())
+    return _body.front();
+}
+
+void Snake::SetDirection(glm::ivec3 direction)
+{
+    if (direction == glm::ivec3())
     {
-        return uvec3(-1, -1, -1);
+        _direction = direction;
+        return;
+    }
+    
+    if (glm::length(glm::vec3(direction)) != 1.0f)
+    {
+        return;
     }
 
-    return _body.front();
+    _direction = direction;
 }

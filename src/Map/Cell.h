@@ -3,8 +3,6 @@
 #pragma once
 #include "Utils/Types.h"
 
-class CubeRenderer;
-
 enum class CellType
 {
     Empty,

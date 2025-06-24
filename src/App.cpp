@@ -76,14 +76,6 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /*SDL_Log("Failed to initialize GameManager.");
-    delete gameManager;
-    SDL_GL_DestroyContext(appStateInstance->Renderer);
-    SDL_DestroyWindow(appStateInstance->Window);
-    SDL_free(appStateInstance);
-    SDL_Quit();
-    return SDL_APP_FAILURE;*/
-
     appStateInstance->GameInstance->RenderGame();
     SDL_GL_SwapWindow(appStateInstance->Window);
 

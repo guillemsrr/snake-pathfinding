@@ -2,7 +2,21 @@
 
 #include "Grid.h"
 
-Cell* Grid::GetCell(uvec3 position)
+#include "Utils/Directions.h"
+
+Grid::Grid()
+{
+}
+
+Grid::~Grid()
+{
+    for (Cell* cell : _cells)
+    {
+        delete cell;
+    }
+}
+
+Cell* Grid::GetCell(uvec3 position) const
 {
     if (position.x < 0 || position.x >= _dimensions.x || position.y < 0 || position.y >= _dimensions.y || position.z < 0
         || position.z >= _dimensions.z)
@@ -10,7 +24,7 @@ Cell* Grid::GetCell(uvec3 position)
         return nullptr;
     }
 
-    int index = Index(position);
+    int index = GetIndex(position);
     if (index < 0 || index >= _cells.size())
     {
         return nullptr;
@@ -50,7 +64,7 @@ void Grid::SetDimensions(uvec3 dimensions)
             for (int x = 0; x < dimensions.x; ++x)
             {
                 uvec3 position = {x, y, z};
-                int idx = Index(position);
+                int idx = GetIndex(position);
                 _cells[idx] = new Cell(position);
                 /*uvec3 position = {
                     static_cast<float>(x) - offset.x,
@@ -79,7 +93,49 @@ void Grid::SetDimensions(uvec3 dimensions)
     }
 }
 
-glm::u32 Grid::Index(uvec3 position) const
+glm::u32 Grid::GetIndex(uvec3 position) const
 {
     return position.x + position.y * _dimensions.x + position.z * _dimensions.x * _dimensions.y;
+}
+
+uvec3 Grid::GetCoords(glm::u32 index) const
+{
+    uvec3 coords;
+    coords.z = index / (_dimensions.x * _dimensions.y);
+    index -= coords.z * (_dimensions.x * _dimensions.y);
+    coords.y = index / _dimensions.x;
+    coords.x = index % _dimensions.x;
+    return coords;
+}
+
+std::vector<Cell*> Grid::GetNeighbors(Cell* cell) const
+{
+    std::vector<Cell*> neighbors;
+    neighbors.reserve(6);
+
+    const uvec3 basePosition = cell->GetGridPosition();
+
+    for (const glm::ivec3& offset : Directions::DirectionsArray)
+    {
+        glm::ivec3 neighborPos = glm::ivec3(basePosition.x + offset.x,
+                                            basePosition.y + offset.y,
+                                            basePosition.z + offset.z);
+
+        if (!IsLocationValid(neighborPos))
+        {
+            continue;
+        }
+
+        uvec3 pos = uvec3(neighborPos.x, neighborPos.y, neighborPos.z);
+        if (Cell* neighbor = GetCell(pos))
+        {
+            neighbors.push_back(neighbor);
+        }
+    }
+    return neighbors;
+}
+
+bool Grid::IsLocationValid(uvec3 vec) const
+{
+    return GetCell(vec) != nullptr;
 }

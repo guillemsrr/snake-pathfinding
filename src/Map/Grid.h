@@ -4,21 +4,28 @@
 
 #include "Cell.h"
 #include <vector>
-#include <cstdint>
+#include "Utils/Types.h"
 
 class Grid
 {
 public:
-    Grid(uint32_t width, uint32_t height);
+    Cell* GetCell(uvec3 position);
+    void SetDimensions(uvec3 dimensions);
 
-    Cell& GetCell(uint32_t x, uint32_t y);
-    const Cell& GetCell(uint32_t x, uint32_t y) const;
+    uvec3 GetDimensions() const
+    {
+        return _dimensions;
+    }
 
-    uint32_t GetWidth() const;
-    uint32_t GetHeight() const;
+    std::vector<Cell*> GetCells()
+    {
+        return _cells;
+    }
 
 private:
-    uint32_t _width;
-    uint32_t _height;
-    std::vector<std::vector<Cell>> _cells;
+    std::vector<Cell*> _cells;
+
+    uvec3 _dimensions = {};
+
+    glm::u32 Index(uvec3 position) const;
 };

@@ -5,12 +5,15 @@
 #include <ctime>
 #include "GameConfig.h"
 
-constexpr uint64_t GAME_STEP_INTERVAL_MS = 100; // Update game logic every 100ms
+#include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-GameManager::GameManager()
-    : _window(nullptr), _renderer(nullptr), _snake(GAME_WIDTH / 2, GAME_HEIGHT / 2), _grid(GAME_WIDTH, GAME_HEIGHT),
-      // Start in a "not playing" state until Init is called
-      _lastGameStepTime(0)
+#include "Graphics/Camera.h"
+#include "Graphics/GraphicsUtils.h"
+
+GameManager::GameManager(): _lastGameStepTime(0)
 {
     srand(time(nullptr));
 }
@@ -19,56 +22,64 @@ GameManager::~GameManager()
 {
 }
 
-bool GameManager::Init(SDL_Window* window, SDL_Renderer* renderer)
+void GameManager::Init()
 {
-    _window = window;
-    _renderer = renderer;
-
-    //_snake = Snake(GAME_WIDTH / 2, GAME_HEIGHT / 2);
-    //_grid = Grid(GAME_WIDTH / 2, GAME_HEIGHT / 2);
     _target.Respawn();
     _lastGameStepTime = SDL_GetTicks();
-    return true;
+
+    _camera = new Camera(glm::vec3(0, 0, 5), glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+    _grid = Grid();
+    uvec3 dimensions = {5, 5, 5};
+    _grid.SetDimensions(dimensions);
+    _mapGenerator = MapGenerator();
+    _mapGenerator.Generate(_grid);
+
+    _cubeRenderer.Init();
+
+    _gridCellShader = GraphicsUtils::LoadShader("basic.vert", "basic.frag");
+    if (_gridCellShader == 0)
+    {
+        SDL_Log("Failed to load shader program. Check file paths and console for errors.");
+    }
 }
 
 void GameManager::Iterate(uint64_t currentTime)
 {
     if (currentTime > _lastGameStepTime + GAME_STEP_INTERVAL_MS)
     {
-        _snake.Move();
-        CheckCollisions();
         _lastGameStepTime = currentTime;
-    }
 
-    RenderGame();
+        //_snake.Move();
+        //CheckCollisions();
+    }
 }
 
 SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
 {
-    if (event.type == SDL_EVENT_KEY_DOWN)
+    if (event.key.scancode == SDL_SCANCODE_ESCAPE)
     {
-        SnakeDirection dir;
-        bool directionChanged = true;
+        return SDL_APP_SUCCESS;
+    }
 
-        switch (event.type)
+    switch (event.type)
+    {
+    case SDL_EVENT_QUIT:
+    case SDL_SCANCODE_ESCAPE:
+        return SDL_APP_SUCCESS;
+    case SDL_SCANCODE_R:
+        //Restart
+        break;
+    case SDL_EVENT_MOUSE_MOTION:
         {
-        case SDLK_UP: dir = SnakeDirection::Up;
-            break;
-        case SDLK_DOWN: dir = SnakeDirection::Down;
-            break;
-        case SDLK_LEFT: dir = SnakeDirection::Left;
-            break;
-        case SDLK_RIGHT: dir = SnakeDirection::Right;
-            break;
-        default:
-            directionChanged = false;
+            int mouseX = static_cast<int>(event.motion.xrel);
+            int mouseY = static_cast<int>(event.motion.yrel);
+            _yaw -= mouseX * 0x00080000;
+            _pitch = SDL_max(-0x40000000, SDL_min(0x40000000, _pitch - mouseY * 0x00080000));
             break;
         }
-
-        if (directionChanged)
-        {
-            _snake.SetDirection(dir);
-        }
+    default:
+        break;
     }
 
     return SDL_APP_CONTINUE;
@@ -76,61 +87,50 @@ SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
 
 void GameManager::Quit()
 {
-    // Perform cleanup here if necessary
 }
 
 void GameManager::CheckCollisions()
 {
-    // Check for collision with target
-    if (_snake.Position == _target.Position)
+    /*if (_snake.GetHead() == _target.Position)
     {
         _snake.Grow();
         _target.Respawn();
     }
 
-    // Check for collision with self
     if (_snake.CheckSelfCollision())
     {
         //TODO
-    }
+    }*/
 }
 
 void GameManager::RenderGame()
 {
-    SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-    SDL_RenderClear(_renderer);
+    float camX = _radius * cosf(_pitch) * sinf(_yaw);
+    float camY = _radius * sinf(_pitch);
+    float camZ = _radius * cosf(_pitch) * cosf(_yaw);
+    glm::vec3 camPos = glm::vec3(camX, camY, camZ);
 
-    //Render grid
-    SDL_SetRenderDrawColor(_renderer, 128, 128, 128, 255);
+    _camera->SetPosition(camPos);
 
-    // Draw vertical lines
-    for (int x = 0; x <= GAME_WIDTH; x++)
+    uvec3 dimensions = _grid.GetDimensions();
+    glm::vec3 center = glm::vec3(dimensions) * 0.5f;
+    _camera->SetTarget(center);
+
+    glUseProgram(_gridCellShader);
+
+    glm::mat4 view = _camera->GetViewMatrix();
+    glm::mat4 proj = _camera->GetProjectionMatrix();
+
+    GLint loc_mvp = glGetUniformLocation(_gridCellShader, "uMVP");
+
+    for (Cell* cell : _grid.GetCells())
     {
-        SDL_FPoint start = {x * 20.0f, 0.0f};
-        SDL_FPoint end = {x * 20.0f, GAME_HEIGHT * 20.0f};
-        SDL_RenderLine(_renderer, start.x, start.y, end.x, end.y);
+        float spacing = 1.1f;
+        glm::vec3 worldPos = glm::vec3(cell->GetGridPosition()) * spacing;
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), worldPos);
+        model = glm::scale(model, glm::vec3(0.9f));
+        glm::mat4 mvp = proj * view * model;
+        glUniformMatrix4fv(loc_mvp, 1, GL_FALSE, &mvp[0][0]);
+        _cubeRenderer.Draw();
     }
-
-    // Draw horizontal lines
-    for (int y = 0; y <= GAME_HEIGHT; y++)
-    {
-        SDL_FPoint start = {0.0f, y * 20.0f};
-        SDL_FPoint end = {GAME_WIDTH * 20.0f, y * 20.0f};
-        SDL_RenderLine(_renderer, start.x, start.y, end.x, end.y);
-    }
-
-    // Render Snake
-    SDL_SetRenderDrawColor(_renderer, 0, 255, 0, 255);
-    for (const auto& segment : _snake.GetBody())
-    {
-        SDL_FRect rect = {(float)segment.x * 20, (float)segment.y * 20, 20, 20};
-        SDL_RenderFillRect(_renderer, &rect);
-    }
-
-    // Render Target
-    SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
-    SDL_FRect rect = {(float)_target.Position.x * 20, (float)_target.Position.y * 20, 20, 20};
-    SDL_RenderFillRect(_renderer, &rect);
-
-    SDL_RenderPresent(_renderer);
 }

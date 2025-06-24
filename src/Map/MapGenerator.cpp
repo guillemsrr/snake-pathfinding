@@ -6,17 +6,14 @@
 
 void MapGenerator::Generate(Grid& grid)
 {
-    for (uint32_t y = 0; y < grid.GetHeight(); ++y)
+    for (uint32_t z = 0; z < grid.GetDimensions().z; ++z)
     {
-        for (uint32_t x = 0; x < grid.GetWidth(); ++x)
+        for (uint32_t y = 0; y < grid.GetDimensions().y; ++y)
         {
-            if (y == 0 || y == grid.GetHeight() - 1 || x == 0 || x == grid.GetWidth() - 1)
+            for (uint32_t x = 0; x < grid.GetDimensions().x; ++x)
             {
-                grid.GetCell(x, y).SetType(CellType::Wall);
-            }
-            else
-            {
-                grid.GetCell(x, y).SetType(CellType::Empty);
+                uvec3 position = {x, y, z};
+                grid.GetCell(position)->SetType(CellType::Empty);
             }
         }
     }

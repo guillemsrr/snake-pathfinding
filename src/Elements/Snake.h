@@ -3,24 +3,24 @@
 #pragma once
 
 #include <vector>
-#include "ElementBase.h"
 
-#include "Core/GameConfig.h"
+#include "Utils/Types.h"
 
-class Snake: public ElementBase
+class Snake
 {
 public:
     Snake();
 
     void Move();
     void Grow();
-    void SetDirection(SnakeDirection direction);
     bool CheckSelfCollision() const;
-    Vector2 GetHead() const;
+    uvec3 GetHead() const;
 
-    const std::vector<Vector2>& GetBody() const {return _body;}
-    
+    const std::vector<uvec3>& GetBody() const
+    {
+        return _body;
+    }
+
 private:
-    std::vector<Vector2> _body;
-    SnakeDirection _direction;
+    std::vector<uvec3> _body;
 };

@@ -9,12 +9,12 @@
 class GameManager;
 
 constexpr uint64_t STEP_RATE_MILLISECONDS = 125;
-inline const char* APP_TITLE = "Snake pathfinding";
+inline const char* APP_TITLE = "Snake AI 3D";
 
 struct AppState
 {
     SDL_Window* Window;
-    SDL_Renderer* Renderer;
+    SDL_GLContext GlContext;
     GameManager* GameInstance;
 };
 

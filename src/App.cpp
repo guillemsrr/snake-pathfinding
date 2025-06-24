@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Guillem Serra. All Rights Reserved.
 #include "App.h"
 
+#include "Core/GameConfig.h"
+
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_log.h>
 #include "Core/GameManager.h"
+#include <glad/glad.h>
 
 extern "C" {
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
@@ -20,6 +23,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_APP_FAILURE;
     }
 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
     AppState* appStateInstance = static_cast<AppState*>(SDL_calloc(1, sizeof(AppState)));
     if (!appStateInstance)
     {
@@ -29,32 +36,34 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     }
     *appstate = appStateInstance;
 
-    if (!SDL_CreateWindowAndRenderer(APP_TITLE,
-                                     WINDOW_WIDTH,
-                                     WINDOW_HEIGHT,
-                                     0,
-                                     &appStateInstance->Window,
-                                     &appStateInstance->Renderer))
+    appStateInstance->Window = SDL_CreateWindow("Snake AI 3D",
+                                                WINDOW_WIDTH,
+                                                WINDOW_HEIGHT,
+                                                SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    if (!appStateInstance->Window)
     {
         SDL_Log("Failed to create window and renderer: %s", SDL_GetError());
         SDL_free(appStateInstance);
         SDL_Quit();
         return SDL_APP_FAILURE;
     }
+    appStateInstance->GlContext = SDL_GL_CreateContext(appStateInstance->Window);
 
-    GameManager* gameManager = new GameManager();
-    if (!gameManager->Init(appStateInstance->Window, appStateInstance->Renderer))
+    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
     {
-        SDL_Log("Failed to initialize GameManager.");
-        delete gameManager;
-        SDL_DestroyRenderer(appStateInstance->Renderer);
-        SDL_DestroyWindow(appStateInstance->Window);
+        SDL_Log("Failed to initialize GLAD", SDL_GetError());
         SDL_free(appStateInstance);
         SDL_Quit();
         return SDL_APP_FAILURE;
     }
 
-    appStateInstance->GameInstance = gameManager;
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glEnable(GL_DEPTH_TEST);
+
+    appStateInstance->GameInstance = new GameManager();
+    appStateInstance->GameInstance->Init();
+
+    SDL_SetWindowRelativeMouseMode(appStateInstance->Window, true);
 
     return SDL_APP_CONTINUE;
 }
@@ -63,6 +72,20 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 {
     AppState* appStateInstance = static_cast<AppState*>(appstate);
     appStateInstance->GameInstance->Iterate(SDL_GetTicks());
+
+    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    /*SDL_Log("Failed to initialize GameManager.");
+    delete gameManager;
+    SDL_GL_DestroyContext(appStateInstance->Renderer);
+    SDL_DestroyWindow(appStateInstance->Window);
+    SDL_free(appStateInstance);
+    SDL_Quit();
+    return SDL_APP_FAILURE;*/
+
+    appStateInstance->GameInstance->RenderGame();
+    SDL_GL_SwapWindow(appStateInstance->Window);
 
     return SDL_APP_CONTINUE;
 }
@@ -84,7 +107,7 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
             delete appStateInstance->GameInstance;
         }
 
-        SDL_DestroyRenderer(appStateInstance->Renderer);
+        SDL_GL_DestroyContext(appStateInstance->GlContext);
         SDL_DestroyWindow(appStateInstance->Window);
         SDL_free(appStateInstance);
     }

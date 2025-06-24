@@ -2,7 +2,10 @@
 
 #include "Cell.h"
 
-Cell::Cell() : _type(CellType::Empty) {}
+Cell::Cell(uvec3 position): _type(CellType::Empty)
+{
+    GridPosition = position;
+}
 
 CellType Cell::GetType() const
 {

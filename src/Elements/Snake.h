@@ -3,6 +3,10 @@
 #pragma once
 
 #include <vector>
+
+#include "Pathfinding/Algorithms/AStarPathfinder.h"
+#include "Pathfinding/Algorithms/AStarPathfinder.h"
+
 #include "Utils/Types.h"
 
 class Snake
@@ -22,6 +26,8 @@ public:
     {
         return _body;
     }
+
+    bool IsAnyBodyPartInPosition(uvec3 position) const;
 
 private:
     std::vector<uvec3> _body;

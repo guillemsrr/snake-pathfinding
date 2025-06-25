@@ -2,6 +2,7 @@
 
 #include "Snake.h"
 #include <glm/geometric.hpp>
+#include <algorithm>
 
 Snake::Snake(): _direction()
 {
@@ -54,6 +55,15 @@ uvec3 Snake::GetHeadLocation() const
     return _body.front();
 }
 
+bool Snake::IsAnyBodyPartInPosition(uvec3 position) const
+{
+    return std::ranges::any_of(_body,
+                               [position](const uvec3& segment)
+                               {
+                                   return segment == position;
+                               });
+}
+
 void Snake::SetDirection(glm::ivec3 direction)
 {
     if (direction == glm::ivec3())
@@ -61,8 +71,8 @@ void Snake::SetDirection(glm::ivec3 direction)
         _direction = direction;
         return;
     }
-    
-    if (glm::length(glm::vec3(direction)) != 1.0f)
+
+    if (glm::length(glm::vec3(direction)) != 1.f)
     {
         return;
     }

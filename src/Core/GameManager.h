@@ -2,21 +2,22 @@
 
 #pragma once
 
-#include "Elements/Snake.h"
-#include "Elements/Target.h"
-
 #include "Graphics/CubeRenderer.h"
 
+#include "Map/GameMap.h"
 #include "Map/Grid.h"
 #include "Map/MapGenerator.h"
 
+#include "Pathfinding/Base/Path.h"
+
 #include <SDL3/SDL.h>
 
+class IPathfinder;
 class Camera;
 
 class GameManager
 {
-    const uint64_t GAME_STEP_INTERVAL_MS = 100;
+    static constexpr uint64_t GAME_STEP_INTERVAL_MS = 50; //400
 
 public:
     GameManager();
@@ -30,8 +31,6 @@ public:
     void RenderGame();
 
 private:
-    void CheckCollisions();
-
     Camera* _camera;
     float _yaw = 0.f;
     float _pitch = 0.f;
@@ -39,12 +38,19 @@ private:
 
     unsigned int _gridCellShader;
 
-    Snake _snake;
+    bool _manualMovement = false;
+
+    IPathfinder* _pathfinder;
+    Path _path;
+
     MapGenerator _mapGenerator;
-    Target _target;
+    GameMap _gameMap;
+
     Grid _grid;
 
     uint64_t _lastGameStepTime;
 
     CubeRenderer _cubeRenderer;
+
+    void HandleSnakeMovement(const SDL_Event& event);
 };

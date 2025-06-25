@@ -1,8 +1,12 @@
 ﻿// Copyright (c) Guillem Serra. All Rights Reserved.
 
 #pragma once
+#include <vector>
+
 #include "Graphics/CubeRenderer.h"
 #include "Graphics/Color/Theme.h"
+
+#include "Map/Cell.h"
 
 struct Path;
 class GameMap;
@@ -18,6 +22,7 @@ public:
     void RenderGrid(const Grid& grid);
     void RenderGameMap(const GameMap& gameMap);
     void RenderPath(const Path& path);
+    void RenderDirection(const std::vector<Cell*>& cells);
 
 private:
     Camera* _camera;

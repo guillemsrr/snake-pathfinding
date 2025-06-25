@@ -27,6 +27,8 @@ public:
     void ResetTargetLocation();
     void CheckCollisions();
 
+    void Reset();
+
 private:
     Grid* _grid = nullptr;
     Snake* _snake;

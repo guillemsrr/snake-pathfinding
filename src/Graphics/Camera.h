@@ -5,6 +5,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Pathfinding/Algorithms/AStarPathfinder.h"
+#include "Pathfinding/Algorithms/AStarPathfinder.h"
+
 class Camera
 {
 public:
@@ -17,11 +20,16 @@ public:
     const glm::mat4& GetViewMatrix() const;
     const glm::mat4& GetProjectionMatrix() const;
 
+    glm::vec3 GetForward() const;
+    glm::vec3 GetRight() const;
+
 private:
     glm::vec3 _position;
     glm::vec3 _target;
     glm::mat4 _viewMatrix;
     glm::mat4 _projectionMatrix;
+
+    glm::vec3 _upVector = { 0.f, 1.f, 0.f };
 
     void UpdateViewMatrix();
     void UpdateProjectionMatrix(float fov, float aspect, float nearP, float farP);

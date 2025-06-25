@@ -18,7 +18,7 @@ uvec3 Snake::GetNextHeadLocation() const
 
 void Snake::Move()
 {
-    if (_direction == uvec3())
+    if (_direction == glm::ivec3())
     {
         return;
     }
@@ -62,6 +62,13 @@ bool Snake::IsAnyBodyPartInPosition(uvec3 position) const
                                {
                                    return segment == position;
                                });
+}
+
+void Snake::Reset()
+{
+    _body.clear();
+    _body.emplace_back(0, 0, 0);
+    _direction = glm::ivec3();
 }
 
 void Snake::SetDirection(glm::ivec3 direction)

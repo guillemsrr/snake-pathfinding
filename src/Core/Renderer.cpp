@@ -93,8 +93,6 @@ void Renderer::RenderGameMap(const GameMap& gameMap)
     _cubeRenderer.Draw();
 
     // Render target location
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     glm::vec3 targetPos = glm::vec3(gameMap.GetTargetLocation()) * 1.0f;
     glm::mat4 targetModel = glm::translate(glm::mat4(1.0f), targetPos);
     targetModel = glm::scale(targetModel, glm::vec3(0.8f));
@@ -102,8 +100,6 @@ void Renderer::RenderGameMap(const GameMap& gameMap)
     glUniformMatrix4fv(locMVP, 1, GL_FALSE, &targetMvp[0][0]);
     glUniform4f(locColor, _theme.TargetColor.r, _theme.TargetColor.g, _theme.TargetColor.b, 1.f);
     _cubeRenderer.Draw();
-
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void Renderer::RenderPath(const Path& path)
@@ -141,6 +137,28 @@ void Renderer::RenderPath(const Path& path)
         glm::mat4 mvp = proj * view * model;
         glUniformMatrix4fv(locMVP, 1, GL_FALSE, &mvp[0][0]);
         glUniform4f(locColor, _theme.PathLineColor.r, _theme.PathLineColor.g, _theme.PathLineColor.b, 1.f);
+        _cubeRenderer.Draw();
+    }
+}
+
+void Renderer::RenderDirection(const std::vector<Cell*>& cells)
+{
+    glUseProgram(_generalShader);
+
+    glm::mat4 view = _camera->GetViewMatrix();
+    glm::mat4 proj = _camera->GetProjectionMatrix();
+
+    GLint locMVP = glGetUniformLocation(_generalShader, "uMVP");
+    GLint locColor = glGetUniformLocation(_generalShader, "uColor");
+    glUniform4f(locColor, _theme.DirectionColor.r, _theme.DirectionColor.g, _theme.DirectionColor.b, 0.25f);
+
+    for (Cell* const& cell : cells)
+    {
+        glm::vec3 worldPos = glm::vec3(cell->GetGridPosition());
+        glm::mat4 model = glm::translate(glm::mat4(1.f), worldPos);
+        model = glm::scale(model, glm::vec3(1.f));
+        glm::mat4 mvp = proj * view * model;
+        glUniformMatrix4fv(locMVP, 1, GL_FALSE, &mvp[0][0]);
         _cubeRenderer.Draw();
     }
 }

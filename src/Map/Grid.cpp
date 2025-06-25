@@ -139,3 +139,30 @@ bool Grid::IsLocationValid(uvec3 vec) const
 {
     return GetCell(vec) != nullptr;
 }
+
+std::vector<Cell*> Grid::GetCellsLine(Cell* originCell, const glm::ivec3 direction) const
+{
+    std::vector<Cell*> result;
+    if (!originCell || direction == glm::ivec3(0))
+    {
+        return result;
+    }
+
+    uvec3 currentPos = originCell->GetGridPosition();
+    while (true)
+    {
+        currentPos += direction;
+        if (!IsLocationValid(currentPos))
+        {
+            break;
+        }
+
+        Cell* nextCell = GetCell(currentPos);
+        if (!nextCell)
+        {
+            break;
+        }
+        result.push_back(nextCell);
+    }
+    return result;
+}

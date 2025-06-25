@@ -40,17 +40,18 @@ void GameManager::Init()
     _mapGenerator.Generate(_grid);
 
     _gameMap = GameMap(_grid);
-
     _renderer = Renderer(_camera);
 
     _gameMap.ResetTargetLocation();
     _pathfinder = new AStarPathfinder();
     _path = _pathfinder->FindPath(_gameMap, _gameMap.GetSnakeCell(), _gameMap.GetTargetCell());
+
+    SetManualMovement(true);
 }
 
 void GameManager::Iterate(uint64_t currentTime)
 {
-    if (currentTime > _lastGameStepTime + GAME_STEP_INTERVAL_MS)
+    if (currentTime > _lastGameStepTime + _currentGameStepIntervalMs)
     {
         _lastGameStepTime = currentTime;
 
@@ -61,7 +62,7 @@ void GameManager::Iterate(uint64_t currentTime)
         }
         else
         {
-            SDL_Log("Snake has collided with a wall!");
+            //SDL_Log("Snake has collided with a wall!");
         }
 
         _gameMap.CheckCollisions();
@@ -85,26 +86,6 @@ void GameManager::Iterate(uint64_t currentTime)
     }
 }
 
-void GameManager::HandleSnakeMovement(const SDL_Event& event)
-{
-    switch (event.key.scancode)
-    {
-    case SDL_SCANCODE_RIGHT:
-        _gameMap.GetSnake()->SetDirection(Directions::Right);
-        break;
-    case SDL_SCANCODE_UP:
-        _gameMap.GetSnake()->SetDirection(Directions::Up);
-        break;
-    case SDL_SCANCODE_LEFT:
-        _gameMap.GetSnake()->SetDirection(Directions::Left);
-        break;
-    case SDL_SCANCODE_DOWN:
-        _gameMap.GetSnake()->SetDirection(Directions::Down);
-        break;
-    default: break;
-    }
-}
-
 SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
 {
     if (event.key.scancode == SDL_SCANCODE_ESCAPE)
@@ -117,9 +98,6 @@ SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
     case SDL_EVENT_QUIT:
     case SDL_SCANCODE_ESCAPE:
         return SDL_APP_SUCCESS;
-    case SDL_SCANCODE_R:
-        //TODO: Restart
-        break;
     case SDL_EVENT_MOUSE_MOTION:
         {
             float sensitivity = 0.005f;
@@ -138,16 +116,87 @@ SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
             _radius = glm::clamp(_radius, 5.0f, 100.0f);
             break;
         }
+    case SDL_EVENT_KEY_DOWN:
+        {
+            HandleScanCode(event.key.scancode);
+            if (_manualMovement)
+            {
+                HandleSnakeMovementQE(event.key.scancode);
+            }
+            break;
+        }
     default:
         break;
     }
+    return SDL_APP_CONTINUE;
+}
 
+void GameManager::HandleScanCode(SDL_Scancode scancode)
+{
+    switch (scancode)
+    {
+    case SDL_SCANCODE_R:
+        _gameMap.Reset();
+        break;
+    case SDL_SCANCODE_M:
+        SetManualMovement(!_manualMovement);
+        break;
+    default: ;
+    }
+}
+
+void GameManager::SetManualMovement(bool isManual)
+{
+    _manualMovement = isManual;
     if (_manualMovement)
     {
-        HandleSnakeMovement(event);
+        _gameMap.GetSnake()->SetDirection(Directions::Back);
+        _currentGameStepIntervalMs = MANUAL_GAME_STEP_INTERVAL_MS;
+    }
+    else
+    {
+        _currentGameStepIntervalMs = AI_GAME_STEP_INTERVAL_MS;
+    }
+}
+
+void GameManager::HandleSnakeMovementQE(SDL_Scancode scancode) const
+{
+    glm::vec3 dir;
+    switch (scancode)
+    {
+    case SDL_SCANCODE_W:
+    case SDL_SCANCODE_UP:
+        dir = _camera->GetForward();
+        break;
+    case SDL_SCANCODE_S:
+    case SDL_SCANCODE_DOWN:
+        dir = -_camera->GetForward();
+        break;
+    case SDL_SCANCODE_D:
+    case SDL_SCANCODE_RIGHT:
+        dir = _camera->GetRight();
+        break;
+    case SDL_SCANCODE_A:
+    case SDL_SCANCODE_LEFT:
+        dir = -_camera->GetRight();
+        break;
+    case SDL_SCANCODE_Q:
+        _gameMap.GetSnake()->SetDirection(Directions::Down);
+        return;
+    case SDL_SCANCODE_E:
+        _gameMap.GetSnake()->SetDirection(Directions::Up);
+        return;
+    default:
+        dir = Directions::None;
+        return;
     }
 
-    return SDL_APP_CONTINUE;
+    glm::ivec3 dominantDir = Directions::ToDominantDirection(dir);
+
+    SDL_Log("dir: x=%f, y=%f, z=%f", dir.x, dir.y, dir.z);
+    SDL_Log("dominantDir: x=%d, y=%d, z=%d", dominantDir.x, dominantDir.y, dominantDir.z);
+
+    _gameMap.GetSnake()->SetDirection(dominantDir);
 }
 
 void GameManager::Quit()
@@ -168,6 +217,10 @@ void GameManager::RenderGame()
 
     _renderer.RenderBackground();
     _renderer.RenderGrid(_grid);
+    if (_manualMovement)
+    {
+        _renderer.RenderDirection(_grid.GetCellsLine(_gameMap.GetSnakeCell(), _gameMap.GetSnake()->GetDirection()));
+    }
     _renderer.RenderGameMap(_gameMap);
 
     if (!_manualMovement && _path.IsValid())

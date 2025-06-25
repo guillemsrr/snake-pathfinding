@@ -82,3 +82,9 @@ void GameMap::CheckCollisions()
         //TODO
     }*/
 }
+
+void GameMap::Reset()
+{
+    _snake->Reset();
+    ResetTargetLocation();
+}

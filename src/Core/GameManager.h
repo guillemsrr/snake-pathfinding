@@ -16,7 +16,8 @@ class Camera;
 
 class GameManager
 {
-    static constexpr uint64_t GAME_STEP_INTERVAL_MS = 1;
+    static constexpr uint64_t AI_GAME_STEP_INTERVAL_MS = 1;
+    static constexpr uint64_t MANUAL_GAME_STEP_INTERVAL_MS = 400;
 
 public:
     GameManager();
@@ -25,11 +26,14 @@ public:
     void Init();
     void Iterate(uint64_t currentTime);
     SDL_AppResult HandleEvent(const SDL_Event& event);
+    void HandleScanCode(SDL_Scancode scancode);
     void Quit();
 
     void RenderGame();
 
 private:
+    uint64_t _currentGameStepIntervalMs;
+
     Camera* _camera;
     float _yaw = 0.f;
     float _pitch = 0.f;
@@ -37,7 +41,7 @@ private:
 
     Renderer _renderer;
 
-    bool _manualMovement = false;
+    bool _manualMovement;
 
     IPathfinder* _pathfinder;
     Path _path;
@@ -49,5 +53,7 @@ private:
 
     uint64_t _lastGameStepTime;
 
-    void HandleSnakeMovement(const SDL_Event& event);
+    void SetManualMovement(bool isManual);
+
+    void HandleSnakeMovementQE(SDL_Scancode scancode) const;
 };

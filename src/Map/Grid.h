@@ -27,6 +27,7 @@ public:
 
     std::vector<Cell*> GetNeighbors(Cell* cell) const;
     bool IsLocationValid(uvec3 vec) const;
+    std::vector<Cell*> GetCellsLine(Cell* originCell, glm::ivec3 direction) const;
 
 private:
     std::vector<Cell*> _cells;

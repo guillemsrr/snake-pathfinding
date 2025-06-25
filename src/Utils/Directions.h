@@ -16,4 +16,6 @@ public:
     static constexpr auto Back = glm::ivec3(0, 0, -1);
 
     static constexpr glm::ivec3 DirectionsArray[6] = {Right, Left, Up, Down, Forward, Back};
+
+    static glm::ivec3 ToDominantDirection(const glm::vec3& v);
 };

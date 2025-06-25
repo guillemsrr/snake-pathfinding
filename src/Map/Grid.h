@@ -20,7 +20,7 @@ public:
         return _dimensions;
     }
 
-    std::vector<Cell*> GetCells()
+    std::vector<Cell*> GetCells() const
     {
         return _cells;
     }

@@ -15,7 +15,7 @@ Path AStarPathfinder::FindPath(IGraph& graph, Cell* start, Cell* end)
         return {};
     }
 
-    auto cmp = [](Node* a, Node* b)
+    auto cmp = [](const Node* a, const Node* b)
     {
         return a->GetTotalCost() > b->GetTotalCost();
     };

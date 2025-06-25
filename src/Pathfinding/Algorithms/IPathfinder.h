@@ -2,13 +2,14 @@
 
 #pragma once
 
-#include <vector>
+class IGraph;
 class Grid;
 class Cell;
+struct Path;
 
 class IPathfinder
 {
 public:
     virtual ~IPathfinder() = default;
-    virtual std::vector<Cell*> FindPath(Grid& grid, Cell* start, Cell* end) = 0;
+    virtual Path FindPath(IGraph& graph, Cell* start, Cell* end) = 0;
 };

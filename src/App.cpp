@@ -5,7 +5,6 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_log.h>
 #include "Core/GameManager.h"
-#include <glad/glad.h>
 
 extern "C" {
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
@@ -22,8 +21,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_APP_FAILURE;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     AppState* appStateInstance = static_cast<AppState*>(SDL_calloc(1, sizeof(AppState)));
@@ -47,21 +46,25 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_APP_FAILURE;
     }
 
-    /*SDL_Rect displayBounds;
+#ifndef __EMSCRIPTEN__
+    SDL_Rect displayBounds;
     SDL_GetDisplayBounds(2, &displayBounds);
     int centeredX = displayBounds.x + (displayBounds.w - WINDOW_WIDTH) / 2;
     int centeredY = displayBounds.y + (displayBounds.h - WINDOW_HEIGHT) / 2;
-    SDL_SetWindowPosition(appStateInstance->Window, centeredX, centeredY);*/
+    SDL_SetWindowPosition(appStateInstance->Window, centeredX, centeredY);
+#endif
 
     appStateInstance->GlContext = SDL_GL_CreateContext(appStateInstance->Window);
 
+#ifdef __EMSCRIPTEN__
+    // Emscripten / WebGL — no glad loader needed
+#else
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
     {
-        SDL_Log("Failed to initialize GLAD", SDL_GetError());
-        SDL_free(appStateInstance);
-        SDL_Quit();
+        SDL_Log("Failed to initialize GLAD");
         return SDL_APP_FAILURE;
     }
+#endif
 
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glEnable(GL_BLEND);

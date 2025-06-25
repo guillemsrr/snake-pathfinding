@@ -1,4 +1,5 @@
-#version 450 core
+#version 300 es
+precision mediump float;
 
 uniform vec4 uColor;
 out vec4 FragColor;

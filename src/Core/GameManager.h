@@ -33,7 +33,7 @@ private:
     Camera* _camera;
     float _yaw = 0.f;
     float _pitch = 0.f;
-    float _radius = 10.f;
+    float _radius = 30.f;
 
     Renderer _renderer;
 

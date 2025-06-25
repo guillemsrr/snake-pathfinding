@@ -3,6 +3,10 @@
 #include <sstream>
 #include <iostream>
 
+#ifndef SHADER_DIR
+#define SHADER_DIR "/src/Graphics/Shaders"
+#endif
+
 GLuint GraphicsUtils::LoadShader(const std::string& vertexPath, const std::string& fragmentPath)
 {
     std::string fullVertexPath = std::string(SHADER_DIR) + "/" + vertexPath;

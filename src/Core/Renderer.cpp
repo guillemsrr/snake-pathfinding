@@ -28,7 +28,7 @@ Renderer::Renderer(Camera* camera)
         SDL_Log("Failed to load shader program. Check file paths and console for errors.");
     }
 
-    _theme = Themes::Dark;
+    _theme = Themes::Light;
 }
 
 void Renderer::RenderBackground()
@@ -94,7 +94,7 @@ void Renderer::RenderGameMap(const GameMap& gameMap)
 
     // Render target location
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    
+
     glm::vec3 targetPos = glm::vec3(gameMap.GetTargetLocation()) * 1.0f;
     glm::mat4 targetModel = glm::translate(glm::mat4(1.0f), targetPos);
     targetModel = glm::scale(targetModel, glm::vec3(0.8f));

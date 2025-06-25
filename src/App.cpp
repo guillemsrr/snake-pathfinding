@@ -2,7 +2,6 @@
 #include "App.h"
 
 #include "Core/GameConfig.h"
-
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_log.h>
 #include "Core/GameManager.h"
@@ -36,7 +35,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     }
     *appstate = appStateInstance;
 
-    appStateInstance->Window = SDL_CreateWindow("Snake AI 3D",
+    appStateInstance->Window = SDL_CreateWindow("SnAI-k 3D",
                                                 WINDOW_WIDTH,
                                                 WINDOW_HEIGHT,
                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
@@ -47,6 +46,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         SDL_Quit();
         return SDL_APP_FAILURE;
     }
+
+    /*SDL_Rect displayBounds;
+    SDL_GetDisplayBounds(2, &displayBounds);
+    int centeredX = displayBounds.x + (displayBounds.w - WINDOW_WIDTH) / 2;
+    int centeredY = displayBounds.y + (displayBounds.h - WINDOW_HEIGHT) / 2;
+    SDL_SetWindowPosition(appStateInstance->Window, centeredX, centeredY);*/
+
     appStateInstance->GlContext = SDL_GL_CreateContext(appStateInstance->Window);
 
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
@@ -58,7 +64,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     }
 
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     appStateInstance->GameInstance = new GameManager();
     appStateInstance->GameInstance->Init();
@@ -72,10 +79,6 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 {
     AppState* appStateInstance = static_cast<AppState*>(appstate);
     appStateInstance->GameInstance->Iterate(SDL_GetTicks());
-
-    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     appStateInstance->GameInstance->RenderGame();
     SDL_GL_SwapWindow(appStateInstance->Window);
 

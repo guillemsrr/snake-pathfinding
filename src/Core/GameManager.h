@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "Graphics/CubeRenderer.h"
-
+#include "Renderer.h"
 #include "Map/GameMap.h"
 #include "Map/Grid.h"
 #include "Map/MapGenerator.h"
@@ -17,7 +16,7 @@ class Camera;
 
 class GameManager
 {
-    static constexpr uint64_t GAME_STEP_INTERVAL_MS = 50; //400
+    static constexpr uint64_t GAME_STEP_INTERVAL_MS = 1;
 
 public:
     GameManager();
@@ -36,7 +35,7 @@ private:
     float _pitch = 0.f;
     float _radius = 10.f;
 
-    unsigned int _gridCellShader;
+    Renderer _renderer;
 
     bool _manualMovement = false;
 
@@ -49,8 +48,6 @@ private:
     Grid _grid;
 
     uint64_t _lastGameStepTime;
-
-    CubeRenderer _cubeRenderer;
 
     void HandleSnakeMovement(const SDL_Event& event);
 };

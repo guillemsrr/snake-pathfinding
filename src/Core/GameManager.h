@@ -16,7 +16,7 @@ class Camera;
 
 class GameManager
 {
-    static constexpr uint64_t AI_GAME_STEP_INTERVAL_MS = 1;
+    static constexpr uint64_t AI_GAME_STEP_INTERVAL_MS = 50;
     static constexpr uint64_t MANUAL_GAME_STEP_INTERVAL_MS = 400;
 
 public:
@@ -33,6 +33,8 @@ public:
 
 private:
     uint64_t _currentGameStepIntervalMs;
+
+    unsigned int _seed;
 
     Camera* _camera;
     float _yaw = 0.f;

@@ -13,13 +13,14 @@
 #include "Graphics/Camera.h"
 #include "Graphics/GraphicsUtils.h"
 
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
+#include "Pathfinding/Algorithms/SafeSnakePathfinder.h"
 
 #include "Utils/Directions.h"
 
 GameManager::GameManager(): _renderer(nullptr), _lastGameStepTime(0)
 {
-    srand(time(nullptr));
+    //_seed = time(nullptr);
+    srand(_seed);
 }
 
 GameManager::~GameManager()
@@ -33,20 +34,21 @@ void GameManager::Init()
     _camera = new Camera(glm::vec3(0, 0, 5), glm::radians(45.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
 
     _grid = Grid();
-    int size = 10;
+    int size = 5;
     uvec3 dimensions = {size, size, size};
     _grid.SetDimensions(dimensions);
+
     _mapGenerator = MapGenerator();
     _mapGenerator.Generate(_grid);
 
-    _gameMap = GameMap(_grid);
+    _gameMap = GameMap(&_grid);
     _renderer = Renderer(_camera);
 
     _gameMap.ResetTargetLocation();
-    _pathfinder = new AStarPathfinder();
-    _path = _pathfinder->FindPath(_gameMap, _gameMap.GetSnakeCell(), _gameMap.GetTargetCell());
+    _pathfinder = new SafeSnakePathfinder();
+    _path = _pathfinder->FindPath(&_gameMap, _gameMap.GetSnakeCell(), _gameMap.GetTargetCell());
 
-    SetManualMovement(true);
+    SetManualMovement(false);
 }
 
 void GameManager::Iterate(uint64_t currentTime)
@@ -67,12 +69,12 @@ void GameManager::Iterate(uint64_t currentTime)
 
         _gameMap.CheckCollisions();
 
+        Cell* headCell = _gameMap.GetSnakeCell();
+        Cell* targetCell = _gameMap.GetTargetCell();
+        _path = _pathfinder->FindPath(&_gameMap, headCell, targetCell);
+
         if (!_manualMovement)
         {
-            Cell* headCell = _gameMap.GetSnakeCell();
-            Cell* targetCell = _gameMap.GetTargetCell();
-            _path = _pathfinder->FindPath(_gameMap, headCell, targetCell);
-
             if (_path.IsValid())
             {
                 uvec3 direction = _path.GetSecond()->GetGridPosition() - headCell->GetGridPosition();
@@ -136,6 +138,7 @@ void GameManager::HandleScanCode(SDL_Scancode scancode)
     switch (scancode)
     {
     case SDL_SCANCODE_R:
+        srand(_seed);
         _gameMap.Reset();
         break;
     case SDL_SCANCODE_M:
@@ -191,10 +194,10 @@ void GameManager::HandleSnakeMovementQE(SDL_Scancode scancode) const
         return;
     }
 
-    glm::ivec3 dominantDir = Directions::ToDominantDirection(dir);
+    glm::ivec3 dominantDir = Directions::ToDominantHorizontalDirection(dir);
 
-    SDL_Log("dir: x=%f, y=%f, z=%f", dir.x, dir.y, dir.z);
-    SDL_Log("dominantDir: x=%d, y=%d, z=%d", dominantDir.x, dominantDir.y, dominantDir.z);
+    //SDL_Log("dir: x=%f, y=%f, z=%f", dir.x, dir.y, dir.z);
+    //SDL_Log("dominantDir: x=%d, y=%d, z=%d", dominantDir.x, dominantDir.y, dominantDir.z);
 
     _gameMap.GetSnake()->SetDirection(dominantDir);
 }
@@ -219,11 +222,20 @@ void GameManager::RenderGame()
     _renderer.RenderGrid(_grid);
     if (_manualMovement)
     {
-        _renderer.RenderDirection(_grid.GetCellsLine(_gameMap.GetSnakeCell(), _gameMap.GetSnake()->GetDirection()));
+        std::vector<Cell*> horizontalCells = _grid.GetCellsHorizontal(_gameMap.GetSnakeCell());
+        _renderer.RenderHorizontalDirection(horizontalCells);
+
+        std::vector<Cell*> verticalCells = _grid.GetCellsVertical(_gameMap.GetSnakeCell());
+        _renderer.RenderHorizontalDirection(verticalCells);
+
+        std::vector<Cell*> forwardDirectionCells = _grid.GetCellsLine(_gameMap.GetSnakeCell(),
+                                                                      _gameMap.GetSnake()->GetDirection());
+        _renderer.RenderForwardDirection(forwardDirectionCells);
     }
+
     _renderer.RenderGameMap(_gameMap);
 
-    if (!_manualMovement && _path.IsValid())
+    if (_path.IsValid())
     {
         _renderer.RenderPath(_path);
     }

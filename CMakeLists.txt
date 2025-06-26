@@ -17,14 +17,33 @@ find_package(glm CONFIG REQUIRED)
 
 # Source files
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp src/*.h)
-add_executable(${PROJECT_NAME} ${SOURCES})
 
-# Include directories
-target_include_directories(${PROJECT_NAME} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+# ImGui sources (manually specified like in the Makefile)
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui)
+set(IMGUI_SOURCES
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imgui_demo.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 )
 
-# Link libraries
+# Create executable
+add_executable(${PROJECT_NAME}
+    ${SOURCES}
+    ${IMGUI_SOURCES}
+)
+
+# Include paths
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+)
+
+# Link libraries (vcpkg targets)
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         SDL3::SDL3
@@ -33,6 +52,7 @@ target_link_libraries(${PROJECT_NAME}
         glm::glm
 )
 
+# Compile-time definitions
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     SHADER_DIR="${CMAKE_SOURCE_DIR}/src/Graphics/Shaders"
 )

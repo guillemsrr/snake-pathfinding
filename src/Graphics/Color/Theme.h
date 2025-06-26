@@ -13,4 +13,5 @@ struct Theme
     glm::vec3 PathLineColor;
     glm::vec3 CellColor;
     glm::vec3 DirectionColor;
+    glm::vec3 VerticalDirectionColor;
 };

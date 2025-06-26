@@ -166,3 +166,40 @@ std::vector<Cell*> Grid::GetCellsLine(Cell* originCell, const glm::ivec3 directi
     }
     return result;
 }
+
+std::vector<Cell*> Grid::GetCellsHorizontal(Cell* originCell) const
+{
+    if (!originCell)
+    {
+        return {};
+    }
+
+    std::vector<Cell*> cells;
+
+    auto frontCells = GetCellsLine(originCell, Directions::Forward);
+    auto leftCells = GetCellsLine(originCell, Directions::Left);
+    auto rightCells = GetCellsLine(originCell, Directions::Right);
+
+    cells.insert(cells.end(), frontCells.begin(), frontCells.end());
+    cells.insert(cells.end(), leftCells.begin(), leftCells.end());
+    cells.insert(cells.end(), rightCells.begin(), rightCells.end());
+
+    return cells;
+}
+
+std::vector<Cell*> Grid::GetCellsVertical(Cell* originCell) const
+{
+    if (!originCell)
+    {
+        return {};
+    }
+
+    std::vector<Cell*> cells;
+    auto upCells = GetCellsLine(originCell, Directions::Up);
+    auto downCells = GetCellsLine(originCell, Directions::Down);
+
+    cells.insert(cells.end(), upCells.begin(), upCells.end());
+    cells.insert(cells.end(), downCells.begin(), downCells.end());
+
+    return cells;
+}

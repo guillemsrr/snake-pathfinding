@@ -28,6 +28,8 @@ public:
     std::vector<Cell*> GetNeighbors(Cell* cell) const;
     bool IsLocationValid(uvec3 vec) const;
     std::vector<Cell*> GetCellsLine(Cell* originCell, glm::ivec3 direction) const;
+    std::vector<Cell*> GetCellsHorizontal(Cell* originCell) const;
+    std::vector<Cell*> GetCellsVertical(Cell* cell) const;
 
 private:
     std::vector<Cell*> _cells;

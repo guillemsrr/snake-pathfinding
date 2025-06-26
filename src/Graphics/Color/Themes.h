@@ -13,7 +13,8 @@ namespace Themes
         .GridLineColor = glm::vec3(0.3f, 0.3f, 0.3f),
         .PathLineColor = glm::vec3(0.9f, 0.4f, 0.f),
         .CellColor = glm::vec3(0.65f),
-        .DirectionColor = glm::vec3(0.f, 0.f, 1.f)
+        .DirectionColor = glm::vec3(0.f, 0.f, 1.f),
+        .VerticalDirectionColor = glm::vec3(0.f, 0.25f, 1.f)
     };
 
     static constexpr Theme Light = {
@@ -24,7 +25,8 @@ namespace Themes
         .GridLineColor = glm::vec3(0.8f, 0.8f, 0.8f),
         .PathLineColor = glm::vec3(0.7f, 0.2f, 0.f),
         .CellColor = glm::vec3(0.35f),
-        .DirectionColor = glm::vec3(0.f, 0.f, 1.f)
+        .DirectionColor = glm::vec3(0.f, 0.f, 1.f),
+        .VerticalDirectionColor = glm::vec3(0.f, 0.25f, 1.f)
     };
 
     static constexpr Theme ColoredDark = {

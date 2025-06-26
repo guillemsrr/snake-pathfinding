@@ -17,5 +17,5 @@ public:
 
     static constexpr glm::ivec3 DirectionsArray[6] = {Right, Left, Up, Down, Forward, Back};
 
-    static glm::ivec3 ToDominantDirection(const glm::vec3& v);
+    static glm::ivec3 ToDominantHorizontalDirection(const glm::vec3& v);
 };

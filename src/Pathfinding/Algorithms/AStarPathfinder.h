@@ -10,7 +10,7 @@ class Node;
 class AStarPathfinder final : public IPathfinder
 {
 public:
-    Path FindPath(IGraph& graph, Cell* start, Cell* end) override;
+    Path FindPath(IGraph* graph, Cell* start, Cell* end) override;
 
 private:
     float CalculateHeuristic(vec3 a, vec3 b) const;

@@ -8,7 +8,7 @@
 #include "Pathfinding/Base/Node.h"
 #include "Pathfinding/Base/Path.h"
 
-Path AStarPathfinder::FindPath(IGraph& graph, Cell* start, Cell* end)
+Path AStarPathfinder::FindPath(IGraph* graph, Cell* start, Cell* end)
 {
     if (!start || !end)
     {
@@ -47,7 +47,7 @@ Path AStarPathfinder::FindPath(IGraph& graph, Cell* start, Cell* end)
             return path;
         }
 
-        for (Cell* neighborCell : graph.GetNeighbors(currentNode->cell))
+        for (Cell* neighborCell : graph->GetNeighbors(currentNode->cell))
         {
             float cost = CalculateHeuristic(currentNode->cell->GetGridPosition(), neighborCell->GetGridPosition());
             float costFomStart = currentNode->GetCostFromStart() + cost;

@@ -167,8 +167,10 @@ void GameManager::HandleScanCode(SDL_Scancode scancode)
     switch (scancode)
     {
     case SDL_SCANCODE_R:
+        _seed = time(nullptr);
         srand(_seed);
         _gameMap.Reset();
+        _score = 0;
         break;
     case SDL_SCANCODE_M:
         SetManualMovement(!_manualMovement);

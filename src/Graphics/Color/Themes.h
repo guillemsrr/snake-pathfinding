@@ -8,7 +8,7 @@ namespace Themes
     static constexpr Theme Dark = {
         .BackgroundColor = glm::vec3(0.f),
         .SnakeHeadColor = glm::vec3(1.f),
-        .SnakeBodyColor = glm::vec3(0.85f),
+        .SnakeBodyColor = glm::vec3(0.65f),
         .TargetColor = glm::vec3(1.f, 0.5f, 0.1f),
         .GridLineColor = glm::vec3(0.3f, 0.3f, 0.3f),
         .PathLineColor = glm::vec3(0.9f, 0.4f, 0.f),

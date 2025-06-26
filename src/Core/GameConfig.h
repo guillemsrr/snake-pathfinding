@@ -10,8 +10,8 @@
 #include <glad/glad.h>
 #endif
 
-constexpr uint32_t GAME_WIDTH = 20U;
-constexpr uint32_t GAME_HEIGHT = 20U;
+constexpr uint32_t GAME_WIDTH = 30U;
+constexpr uint32_t GAME_HEIGHT = 30U;
 
 constexpr int32_t BLOCK_SIZE_PIXELS = 24;
 constexpr GLsizei WINDOW_WIDTH = BLOCK_SIZE_PIXELS * GAME_WIDTH;

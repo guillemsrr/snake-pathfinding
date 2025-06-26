@@ -22,7 +22,9 @@ public:
     void RenderGrid(const Grid& grid);
     void RenderGameMap(const GameMap& gameMap);
     void RenderPath(const Path& path);
-    void RenderDirection(const std::vector<Cell*>& cells);
+    void RenderHorizontalDirection(const std::vector<Cell*>& cells);
+    void RenderVerticalDirection(const std::vector<Cell*>& cells);
+    void RenderForwardDirection(const std::vector<Cell*>& cells);
 
 private:
     Camera* _camera;
@@ -31,4 +33,6 @@ private:
     CubeRenderer _cubeRenderer;
 
     Theme _theme;
+
+    void RenderCells(const std::vector<Cell*>& cells, glm::vec4 color);
 };

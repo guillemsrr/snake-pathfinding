@@ -25,7 +25,7 @@ Renderer::Renderer(Camera* camera)
     _generalShader = GraphicsUtils::LoadShader("basic.vert", "basic.frag");
     if (_generalShader == 0)
     {
-        SDL_Log("Failed to load shader program. Check file paths and console for errors.");
+        SDL_Log("Failed to load shader program");
     }
 
     _theme = Themes::Light;
@@ -39,25 +39,8 @@ void Renderer::RenderBackground()
 
 void Renderer::RenderGrid(const Grid& grid)
 {
-    glUseProgram(_generalShader);
-
-    glm::mat4 view = _camera->GetViewMatrix();
-    glm::mat4 proj = _camera->GetProjectionMatrix();
-
-    GLint locMVP = glGetUniformLocation(_generalShader, "uMVP");
-    GLint locColor = glGetUniformLocation(_generalShader, "uColor");
-    glUniform4f(locColor, _theme.CellColor.r, _theme.CellColor.g, _theme.CellColor.b, 0.01f);
-
-    for (const Cell* cell : grid.GetCells())
-    {
-        float spacing = 1.f;
-        glm::vec3 worldPos = glm::vec3(cell->GetGridPosition()) * spacing;
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), worldPos);
-        model = glm::scale(model, glm::vec3(1.f));
-        glm::mat4 mvp = proj * view * model;
-        glUniformMatrix4fv(locMVP, 1, GL_FALSE, &mvp[0][0]);
-        _cubeRenderer.Draw();
-    }
+    std::vector<Cell*> cells = grid.GetCells();
+    RenderCells(cells, glm::vec4(_theme.CellColor, 0.02f));
 }
 
 void Renderer::RenderGameMap(const GameMap& gameMap)
@@ -112,7 +95,7 @@ void Renderer::RenderPath(const Path& path)
     GLint locMVP = glGetUniformLocation(_generalShader, "uMVP");
     GLint locColor = glGetUniformLocation(_generalShader, "uColor");
 
-    for (int i = 0; i < path.Cells.size() - 2; ++i)
+    for (int i = 0; i < path.Cells.size() - 1; ++i)
     {
         glm::vec3 start = glm::vec3(path.Cells[i]->GetGridPosition());
         glm::vec3 end = glm::vec3(path.Cells[i + 1]->GetGridPosition());
@@ -141,7 +124,22 @@ void Renderer::RenderPath(const Path& path)
     }
 }
 
-void Renderer::RenderDirection(const std::vector<Cell*>& cells)
+void Renderer::RenderHorizontalDirection(const std::vector<Cell*>& cells)
+{
+    RenderCells(cells, glm::vec4(_theme.DirectionColor, 0.05f));
+}
+
+void Renderer::RenderVerticalDirection(const std::vector<Cell*>& cells)
+{
+    RenderCells(cells, glm::vec4(_theme.VerticalDirectionColor, 0.05f));
+}
+
+void Renderer::RenderForwardDirection(const std::vector<Cell*>& cells)
+{
+    RenderCells(cells, glm::vec4(_theme.DirectionColor, 0.25f));
+}
+
+void Renderer::RenderCells(const std::vector<Cell*>& cells, glm::vec4 color)
 {
     glUseProgram(_generalShader);
 
@@ -150,7 +148,7 @@ void Renderer::RenderDirection(const std::vector<Cell*>& cells)
 
     GLint locMVP = glGetUniformLocation(_generalShader, "uMVP");
     GLint locColor = glGetUniformLocation(_generalShader, "uColor");
-    glUniform4f(locColor, _theme.DirectionColor.r, _theme.DirectionColor.g, _theme.DirectionColor.b, 0.25f);
+    glUniform4f(locColor, color.r, color.g, color.b, color.a);
 
     for (Cell* const& cell : cells)
     {

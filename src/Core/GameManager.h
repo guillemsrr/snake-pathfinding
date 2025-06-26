@@ -26,10 +26,8 @@ public:
     void Init();
     void Iterate(uint64_t currentTime);
     SDL_AppResult HandleEvent(const SDL_Event& event);
-    void HandleScanCode(SDL_Scancode scancode);
-    void Quit();
-
     void RenderGame();
+    void Quit();
 
 private:
     uint64_t _currentGameStepIntervalMs;
@@ -38,11 +36,11 @@ private:
 
     Camera* _camera;
 
-
+    bool _isPaused = false;
 
     const int _size = 5;
-    uvec3 _dimensions = {_size, _size, 1};
-    
+    uvec3 _dimensions = {_size, _size, _size};
+
     Renderer _renderer;
 
     bool _manualMovement;
@@ -57,7 +55,10 @@ private:
 
     uint64_t _lastGameStepTime;
 
+    void Iterate();
+
     void SetManualMovement(bool isManual);
 
+    void HandleScanCode(SDL_Scancode scancode);
     void HandleSnakeMovementQE(SDL_Scancode scancode) const;
 };

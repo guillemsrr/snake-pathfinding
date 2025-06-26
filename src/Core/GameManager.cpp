@@ -19,7 +19,7 @@
 
 GameManager::GameManager(): _renderer(nullptr), _lastGameStepTime(0)
 {
-    //_seed = time(nullptr);
+    _seed = time(nullptr);
     srand(_seed);
 }
 
@@ -52,37 +52,47 @@ void GameManager::Init()
 
 void GameManager::Iterate(uint64_t currentTime)
 {
+    if (_isPaused)
+    {
+        return;
+    }
+
     if (currentTime > _lastGameStepTime + _currentGameStepIntervalMs)
     {
         _lastGameStepTime = currentTime;
 
-        uvec3 nextLocation = _gameMap.GetSnake()->GetNextHeadLocation();
-        if (_grid.IsLocationValid(nextLocation))
+        Iterate();
+    }
+}
+
+void GameManager::Iterate()
+{
+    uvec3 nextLocation = _gameMap.GetSnake()->GetNextHeadLocation();
+    if (_grid.IsLocationValid(nextLocation))
+    {
+        _gameMap.GetSnake()->Move();
+    }
+    else
+    {
+        //SDL_Log("Snake has collided with a wall!");
+    }
+
+    _gameMap.CheckCollisions();
+
+    Cell* headCell = _gameMap.GetSnakeCell();
+    Cell* targetCell = _gameMap.GetTargetCell();
+    _path = _pathfinder->FindPath(&_gameMap, headCell, targetCell);
+
+    if (!_manualMovement)
+    {
+        if (_path.IsValid())
         {
-            _gameMap.GetSnake()->Move();
+            uvec3 direction = _path.GetSecond()->GetGridPosition() - headCell->GetGridPosition();
+            _gameMap.GetSnake()->SetDirection(direction);
         }
         else
         {
-            //SDL_Log("Snake has collided with a wall!");
-        }
-
-        _gameMap.CheckCollisions();
-
-        Cell* headCell = _gameMap.GetSnakeCell();
-        Cell* targetCell = _gameMap.GetTargetCell();
-        _path = _pathfinder->FindPath(&_gameMap, headCell, targetCell);
-
-        if (!_manualMovement)
-        {
-            if (_path.IsValid())
-            {
-                uvec3 direction = _path.GetSecond()->GetGridPosition() - headCell->GetGridPosition();
-                _gameMap.GetSnake()->SetDirection(direction);
-            }
-            else
-            {
-                _gameMap.GetSnake()->SetDirection(Directions::None);
-            }
+            _gameMap.GetSnake()->SetDirection(Directions::None);
         }
     }
 }
@@ -128,6 +138,15 @@ void GameManager::HandleScanCode(SDL_Scancode scancode)
         break;
     case SDL_SCANCODE_M:
         SetManualMovement(!_manualMovement);
+        break;
+    case SDL_SCANCODE_P:
+        _isPaused = !_isPaused;
+        break;
+    case SDL_SCANCODE_RIGHT:
+        if (_isPaused)
+        {
+            Iterate();
+        }
         break;
     default: ;
     }

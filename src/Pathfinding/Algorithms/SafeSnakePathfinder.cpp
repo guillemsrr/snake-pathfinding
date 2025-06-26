@@ -1,4 +1,6 @@
 ﻿#include "SafeSnakePathfinder.h"
+#include <queue>
+#include <unordered_set>
 #include "AStarPathfinder.h"
 
 #include "Elements/Snake.h"
@@ -18,30 +20,11 @@ Path SafeSnakePathfinder::FindPath(IGraph* graph, Cell* start, Cell* end)
 
     GameMap* gameMapGraph = dynamic_cast<GameMap*>(graph);
 
-    //check the if it has a correct exit simulating having arrived to target
     if (pathToFood.IsValid())
     {
-        GameMap simulatedGameMap = *gameMapGraph;
-
-        SimulateSnakeFollowPath(simulatedGameMap, pathToFood);
-        Cell* headCell = simulatedGameMap.GetSnakeCell();
-        Cell* tailCell = simulatedGameMap.GetCell(simulatedGameMap.GetSnake()->GetTailLocation());
-        Path pathToTail = _aStarPathdinder->FindPath(&simulatedGameMap, headCell, tailCell);
-
-        if (pathToTail.IsValid())
+        if (!IsPathTrappable(pathToFood, gameMapGraph))
         {
             return pathToFood;
-        }
-
-        //Try reaching any open cell
-        std::vector<Cell*> freeCells = simulatedGameMap.GetFreeCells();
-        for (Cell* freeCell : freeCells)
-        {
-            Path altPath = _aStarPathdinder->FindPath(&simulatedGameMap, simulatedGameMap.GetSnakeCell(), freeCell);
-            if (altPath.IsValid())
-            {
-                return pathToFood; // Still safe
-            }
         }
     }
 
@@ -62,6 +45,28 @@ Path SafeSnakePathfinder::FindPath(IGraph* graph, Cell* start, Cell* end)
     return longestPath;
 }
 
+bool SafeSnakePathfinder::IsPathTrappable(const Path& path, GameMap* gameMap)
+{
+    GameMap simulatedGameMap = *gameMap;
+    SimulateSnakeFollowPath(simulatedGameMap, path);
+    Cell* headCell = simulatedGameMap.GetSnakeCell();
+    Cell* tailCell = simulatedGameMap.GetCell(simulatedGameMap.GetSnake()->GetTailLocation());
+
+    Path pathToTail = _aStarPathdinder->FindPath(&simulatedGameMap, headCell, tailCell);
+    if (pathToTail.IsValid())
+    {
+        return false;
+    }
+
+    int numberCellsFlood = FloodFillAccessibleCellCount(simulatedGameMap, headCell);
+    if (numberCellsFlood > simulatedGameMap.GetSnake()->GetLength())
+    {
+        return false;
+    }
+
+    return true;
+}
+
 void SafeSnakePathfinder::SimulateSnakeFollowPath(const GameMap& gameMap, const Path& path)
 {
     Snake* simulatedSnake = gameMap.GetSnake();
@@ -72,4 +77,40 @@ void SafeSnakePathfinder::SimulateSnakeFollowPath(const GameMap& gameMap, const 
         simulatedSnake->SetDirection(direction);
         simulatedSnake->Move();
     }
+}
+
+int SafeSnakePathfinder::FloodFillAccessibleCellCount(const GameMap& gameMap, Cell* start)
+{
+    if (!start)
+    {
+        return 0;
+    }
+
+    std::queue<Cell*> open;
+    std::unordered_set<Cell*> visited;
+
+    open.push(start);
+    visited.insert(start);
+
+    int count = 0;
+
+    while (!open.empty())
+    {
+        Cell* current = open.front();
+        open.pop();
+        ++count;
+
+        for (Cell* neighbor : gameMap.GetNeighbors(current))
+        {
+            if (visited.contains(neighbor))
+            {
+                continue;
+            }
+
+            visited.insert(neighbor);
+            open.push(neighbor);
+        }
+    }
+
+    return count;
 }

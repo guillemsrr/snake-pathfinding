@@ -19,5 +19,7 @@ public:
 private:
     AStarPathfinder* _aStarPathdinder;
 
+    bool IsPathTrappable(const Path& path, GameMap* gameMap);
     void SimulateSnakeFollowPath(const GameMap& gameMap, const Path& path);
+    int FloodFillAccessibleCellCount(const GameMap& gameMap, Cell* start);
 };

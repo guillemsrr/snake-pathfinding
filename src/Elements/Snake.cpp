@@ -81,6 +81,11 @@ void Snake::Reset()
     _direction = glm::ivec3();
 }
 
+int Snake::GetLength() const
+{
+    return _body.size();
+}
+
 void Snake::SetDirection(glm::ivec3 direction)
 {
     if (direction == glm::ivec3())

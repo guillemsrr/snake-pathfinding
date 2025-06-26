@@ -32,6 +32,8 @@ public:
         return _direction;
     }
 
+    int GetLength() const;
+
 private:
     std::vector<uvec3> _body;
 

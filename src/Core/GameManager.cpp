@@ -157,7 +157,7 @@ void GameManager::SetManualMovement(bool isManual)
     _manualMovement = isManual;
     if (_manualMovement)
     {
-        _gameMap.GetSnake()->SetDirection(Directions::Back);
+        _gameMap.GetSnake()->SetDirection(Directions::None);
         _currentGameStepIntervalMs = MANUAL_GAME_STEP_INTERVAL_MS;
     }
     else

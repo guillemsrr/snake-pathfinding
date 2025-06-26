@@ -19,7 +19,8 @@ public:
 private:
     AStarPathfinder* _aStarPathdinder;
 
-    bool IsPathTrappable(const Path& path, GameMap* gameMap);
+    bool IsPathTrappable(GameMap* gameMap, const Path& path);
     void SimulateSnakeFollowPath(const GameMap& gameMap, const Path& path);
     int FloodFillAccessibleCellCount(const GameMap& gameMap, Cell* start);
+    Path FindLongestSafePath(IGraph* graph, Cell* start, GameMap* gameMapGraph);
 };

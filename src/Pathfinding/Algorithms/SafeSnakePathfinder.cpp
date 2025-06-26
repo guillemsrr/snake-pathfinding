@@ -9,6 +9,8 @@
 
 #include "Pathfinding/Base/Path.h"
 
+#include <SDL3/SDL_log.h>
+
 SafeSnakePathfinder::~SafeSnakePathfinder()
 {
     delete _aStarPathdinder;
@@ -22,30 +24,49 @@ Path SafeSnakePathfinder::FindPath(IGraph* graph, Cell* start, Cell* end)
 
     if (pathToFood.IsValid())
     {
-        if (!IsPathTrappable(pathToFood, gameMapGraph))
+        if (!IsPathTrappable(gameMapGraph, pathToFood))
         {
             return pathToFood;
         }
     }
-
-    // Find the safest cell with longest path
-    Path longestPath;
-    std::vector<Cell*> freeCells = gameMapGraph->GetFreeCells();
-    for (Cell* freeCell : freeCells)
+    else
     {
-        Path currentPath = _aStarPathdinder->FindPath(graph, start, freeCell);
-        if (currentPath.IsValid() && currentPath.Cells.size() > longestPath.Cells.size())
+        SDL_Log("Invalid path to food, Game over");
+    }
+
+    for (Cell* neighbor : gameMapGraph->GetNeighbors(start))
+    {
+        Path detour = _aStarPathdinder->FindPath(graph, neighbor, end);
+        if (detour.IsValid() && !IsPathTrappable(gameMapGraph, detour))
         {
-            longestPath = currentPath;
+            // Move toward neighbor (wasting a step)
+            Path singleStepPath;
+            singleStepPath.Cells.push_back(start);
+            singleStepPath.Cells.push_back(neighbor);
+            return singleStepPath;
         }
     }
 
-    //TODO: simulate that after having arrived there, it wont' get stuck
+    std::vector<Cell*> neighbors = gameMapGraph->GetNeighbors(start);
+    if (!neighbors.empty())
+    {
+        Cell* neighbor = neighbors[rand() % neighbors.size()];
 
+        Path manhattahnPath;
+        manhattahnPath.Cells.push_back(start);
+        manhattahnPath.Cells.push_back(neighbor);
+        if (manhattahnPath.IsValid() && !IsPathTrappable(gameMapGraph, manhattahnPath))
+        {
+            return manhattahnPath;
+        }
+    }
+
+    // Find the safest cell with longest path
+    Path longestPath = FindLongestSafePath(graph, start, gameMapGraph);
     return longestPath;
 }
 
-bool SafeSnakePathfinder::IsPathTrappable(const Path& path, GameMap* gameMap)
+bool SafeSnakePathfinder::IsPathTrappable(GameMap* gameMap, const Path& path)
 {
     GameMap simulatedGameMap = *gameMap;
     SimulateSnakeFollowPath(simulatedGameMap, path);
@@ -113,4 +134,20 @@ int SafeSnakePathfinder::FloodFillAccessibleCellCount(const GameMap& gameMap, Ce
     }
 
     return count;
+}
+
+Path SafeSnakePathfinder::FindLongestSafePath(IGraph* graph, Cell* start, GameMap* gameMapGraph)
+{
+    Path longestPath;
+    std::vector<Cell*> freeCells = gameMapGraph->GetFreeCells();
+    for (Cell* freeCell : freeCells)
+    {
+        Path currentPath = _aStarPathdinder->FindPath(graph, start, freeCell);
+        if (currentPath.IsValid() && currentPath.Cells.size() > longestPath.Cells.size())
+        {
+            longestPath = currentPath;
+        }
+    }
+
+    return longestPath;
 }

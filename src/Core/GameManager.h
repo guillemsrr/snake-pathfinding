@@ -16,7 +16,7 @@ class Camera;
 
 class GameManager
 {
-    static constexpr uint64_t AI_GAME_STEP_INTERVAL_MS = 50;
+    static constexpr uint64_t AI_GAME_STEP_INTERVAL_MS = 1;
     static constexpr uint64_t MANUAL_GAME_STEP_INTERVAL_MS = 400;
 
 public:
@@ -38,7 +38,7 @@ private:
 
     bool _isPaused = false;
 
-    const int _size = 5;
+    const int _size = 10;
     uvec3 _dimensions = {_size, _size, _size};
 
     Renderer _renderer;

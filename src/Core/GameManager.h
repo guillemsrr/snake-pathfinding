@@ -37,10 +37,12 @@ private:
     unsigned int _seed;
 
     Camera* _camera;
-    float _yaw = 0.f;
-    float _pitch = 0.f;
-    float _radius = 30.f;
 
+
+
+    const int _size = 5;
+    uvec3 _dimensions = {_size, _size, 1};
+    
     Renderer _renderer;
 
     bool _manualMovement;

@@ -34,9 +34,8 @@ void GameManager::Init()
     _camera = new Camera(glm::vec3(0, 0, 5), glm::radians(45.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
 
     _grid = Grid();
-    int size = 5;
-    uvec3 dimensions = {size, size, size};
-    _grid.SetDimensions(dimensions);
+
+    _grid.SetDimensions(_dimensions);
 
     _mapGenerator = MapGenerator();
     _mapGenerator.Generate(_grid);
@@ -101,32 +100,18 @@ SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
     case SDL_SCANCODE_ESCAPE:
         return SDL_APP_SUCCESS;
     case SDL_EVENT_MOUSE_MOTION:
-        {
-            float sensitivity = 0.005f;
-
-            _yaw -= event.motion.xrel * sensitivity;
-            _pitch -= event.motion.yrel * sensitivity;
-
-            const float pitchLimit = glm::radians(89.0f);
-            _pitch = glm::clamp(_pitch, -pitchLimit, pitchLimit);
-            break;
-        }
+        _camera->ApplyMotion(event.motion.xrel, event.motion.yrel);
+        break;
     case SDL_EVENT_MOUSE_WHEEL:
-        {
-            float zoomSensitivity = 0.5f;
-            _radius -= event.wheel.y * zoomSensitivity;
-            _radius = glm::clamp(_radius, 5.0f, 100.0f);
-            break;
-        }
+        _camera->AddRadius(event.wheel.y);
+        break;
     case SDL_EVENT_KEY_DOWN:
+        HandleScanCode(event.key.scancode);
+        if (_manualMovement)
         {
-            HandleScanCode(event.key.scancode);
-            if (_manualMovement)
-            {
-                HandleSnakeMovementQE(event.key.scancode);
-            }
-            break;
+            HandleSnakeMovementQE(event.key.scancode);
         }
+        break;
     default:
         break;
     }
@@ -208,15 +193,9 @@ void GameManager::Quit()
 
 void GameManager::RenderGame()
 {
-    float camX = _radius * cosf(_pitch) * sinf(_yaw);
-    float camY = _radius * sinf(_pitch);
-    float camZ = _radius * cosf(_pitch) * cosf(_yaw);
-    auto camPos = glm::vec3(camX, camY, camZ);
-
-    uvec3 dimensions = _grid.GetDimensions();
-    glm::vec3 center = glm::vec3(dimensions) * 0.5f;
-    _camera->SetPosition(center + camPos);
+    glm::vec3 center = glm::vec3(_dimensions) * 0.5f;
     _camera->SetTarget(center);
+    _camera->UpdatePosition();
 
     _renderer.RenderBackground();
     _renderer.RenderGrid(_grid);

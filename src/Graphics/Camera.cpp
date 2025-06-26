@@ -7,16 +7,9 @@ Camera::Camera(glm::vec3 position, float fov, float aspect, float nearP, float f
     UpdateProjectionMatrix(fov, aspect, nearP, farP);
 }
 
-void Camera::SetPosition(const glm::vec3& pos)
-{
-    _position = pos;
-    UpdateViewMatrix();
-}
-
 void Camera::SetTarget(const glm::vec3& target)
 {
     _target = target;
-    UpdateViewMatrix();
 }
 
 void Camera::SetAspectRatio(float aspectRatio)
@@ -45,6 +38,30 @@ glm::vec3 Camera::GetRight() const
     glm::vec3 forward = glm::normalize(_target - _position);
     glm::vec3 right = glm::normalize(glm::cross(forward, _upVector));
     return right;
+}
+
+void Camera::UpdatePosition()
+{
+    float camX = _radius * cosf(_pitch) * sinf(_yaw);
+    float camY = _radius * sinf(_pitch);
+    float camZ = _radius * cosf(_pitch) * cosf(_yaw);
+    _position = _target + glm::vec3(camX, camY, camZ);
+
+    UpdateViewMatrix();
+}
+
+void Camera::ApplyMotion(float xrel, float yrel)
+{
+    _yaw -=  xrel* _sensitivity;
+    _pitch -= yrel * _sensitivity;
+
+    _pitch = glm::clamp(_pitch, -_pitchLimit, _pitchLimit);
+}
+
+void Camera::AddRadius(float wheelValue)
+{
+    _radius -=  wheelValue * _zoomSensitivity;
+    _radius = glm::clamp(_radius, 5.0f, 100.0f);
 }
 
 void Camera::UpdateViewMatrix()

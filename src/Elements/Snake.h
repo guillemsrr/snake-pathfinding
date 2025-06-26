@@ -17,6 +17,7 @@ public:
     void SetDirection(glm::ivec3 direction);
 
     uvec3 GetHeadLocation() const;
+    uvec3 GetTailLocation() const;
 
     const std::vector<uvec3>& GetBody() const
     {

@@ -6,7 +6,7 @@
 
 Snake::Snake(): _direction()
 {
-    _body.push_back({0, 0, 0});
+    Reset();
 }
 
 uvec3 Snake::GetNextHeadLocation() const
@@ -55,8 +55,18 @@ uvec3 Snake::GetHeadLocation() const
     return _body.front();
 }
 
+uvec3 Snake::GetTailLocation() const
+{
+    return _body.back();
+}
+
 bool Snake::IsAnyBodyPartInPosition(uvec3 position) const
 {
+    if (GetTailLocation() == position)
+    {
+        return false;
+    }
+
     return std::ranges::any_of(_body,
                                [position](const uvec3& segment)
                                {

@@ -81,7 +81,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     //ImGui::StyleColorsLight();
 
     // Setup scaling
-    float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+    float main_scale = SDL_GetWindowDisplayScale(window);
     ImGuiStyle& style = ImGui::GetStyle();
     style.ScaleAllSizes(main_scale);
     // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
@@ -109,7 +109,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     appStateInstance->GameInstance = new GameManager();
     appStateInstance->GameInstance->Init();
 
-    SDL_SetWindowRelativeMouseMode(window, true);
+    //SDL_SetWindowRelativeMouseMode(window, true);
 
     return SDL_APP_CONTINUE;
 }
@@ -131,9 +131,26 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f); // top-left
 
     ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-    ImGui::SetNextWindowBgAlpha(0.0f); // Transparent background
+    ImGui::SetNextWindowBgAlpha(0.0f);
 
-    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255)); // Black text
+    ImU32 HUDColor = appStateInstance->GameInstance->GetHUDColor();
+    ImGui::PushStyleColor(ImGuiCol_Text, HUDColor);
+
+    ImGui::Begin("HUD",
+                 nullptr,
+                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing
+                 | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground);
+
+    appStateInstance->GameInstance->RenderHUD();
+
+    ImGui::End();
+
+    window_pos = ImVec2(ImGui::GetIO().DisplaySize.x - DISTANCE_FROM_EDGE, DISTANCE_FROM_EDGE);
+    window_pos_pivot = ImVec2(1.0f, 0.0f); // top-right
+
+    ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+    ImGui::SetNextWindowBgAlpha(0.f);
+
     ImGui::Begin("FPS",
                  nullptr,
                  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing
@@ -141,6 +158,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::End();
+
     ImGui::PopStyleColor();
 
     ImGui::Render();

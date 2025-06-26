@@ -119,6 +119,11 @@ void GameMap::CheckCollisions()
     {
         _snake->Grow();
         ResetTargetLocation();
+
+        if (onSnakeReachedTarget)
+        {
+            onSnakeReachedTarget();
+        }
     }
 
     /*if (_snake.CheckSelfCollision())

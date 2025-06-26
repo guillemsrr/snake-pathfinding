@@ -28,7 +28,7 @@ Renderer::Renderer(Camera* camera)
         SDL_Log("Failed to load shader program");
     }
 
-    _theme = Themes::Light;
+    SwapTheme();
 }
 
 void Renderer::RenderBackground()
@@ -137,6 +137,29 @@ void Renderer::RenderVerticalDirection(const std::vector<Cell*>& cells)
 void Renderer::RenderForwardDirection(const std::vector<Cell*>& cells)
 {
     RenderCells(cells, glm::vec4(_theme.DirectionColor, 0.25f));
+}
+
+void Renderer::SwapTheme()
+{
+    _isLight = !_isLight;
+    if (_isLight)
+    {
+        _theme = Themes::Light;
+    }
+    else
+    {
+        _theme = Themes::Dark;
+    }
+}
+
+ImU32 Renderer::GetHUDColor()
+{
+    if (_isLight)
+    {
+        return IM_COL32(0, 0, 0, 255);
+    }
+
+    return IM_COL32(255, 255, 255, 255);
 }
 
 void Renderer::RenderCells(const std::vector<Cell*>& cells, glm::vec4 color)

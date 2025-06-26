@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Guillem Serra. All Rights Reserved.
 
 #pragma once
+#include <imgui.h>
 #include <vector>
 
 #include "Graphics/CubeRenderer.h"
@@ -26,6 +27,9 @@ public:
     void RenderVerticalDirection(const std::vector<Cell*>& cells);
     void RenderForwardDirection(const std::vector<Cell*>& cells);
 
+    void SwapTheme();
+    ImU32 GetHUDColor();
+
 private:
     Camera* _camera;
     unsigned int _generalShader;
@@ -33,6 +37,7 @@ private:
     CubeRenderer _cubeRenderer;
 
     Theme _theme;
+    bool _isLight = false;
 
     void RenderCells(const std::vector<Cell*>& cells, glm::vec4 color);
 };

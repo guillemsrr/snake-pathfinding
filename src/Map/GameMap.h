@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Guillem Serra. All Rights Reserved.
 
 #pragma once
+#include <functional>
 #include <memory>
 #include "Grid.h"
 
@@ -15,6 +16,8 @@ public:
     GameMap(Grid* grid);
     GameMap(const GameMap& other);
     GameMap& operator=(const GameMap& other);
+
+    std::function<void()> onSnakeReachedTarget;
     
     Snake* GetSnake() const;
     Cell* GetSnakeCell() const;

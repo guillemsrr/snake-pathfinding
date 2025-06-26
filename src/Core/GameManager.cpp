@@ -3,12 +3,9 @@
 #include "GameManager.h"
 #include <cstdlib>
 #include <ctime>
+#include <imgui.h>
 #include "GameConfig.h"
-
 #include "Elements/Snake.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "Graphics/Camera.h"
 #include "Graphics/GraphicsUtils.h"
@@ -48,6 +45,11 @@ void GameManager::Init()
     _path = _pathfinder->FindPath(&_gameMap, _gameMap.GetSnakeCell(), _gameMap.GetTargetCell());
 
     SetManualMovement(false);
+
+    _gameMap.onSnakeReachedTarget = [this]()
+    {
+        _score += 1;
+    };
 }
 
 void GameManager::Iterate(uint64_t currentTime)
@@ -57,7 +59,8 @@ void GameManager::Iterate(uint64_t currentTime)
         return;
     }
 
-    if (currentTime > _lastGameStepTime + _currentGameStepIntervalMs)
+    uint64_t targetTime = _lastGameStepTime + _currentGameStepIntervalMs + _intervalLagMs;
+    if (currentTime > targetTime)
     {
         _lastGameStepTime = currentTime;
 
@@ -109,8 +112,23 @@ SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
     case SDL_EVENT_QUIT:
     case SDL_SCANCODE_ESCAPE:
         return SDL_APP_SUCCESS;
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        if (event.button.button == SDL_BUTTON_LEFT)
+        {
+            _mouseRotating = true;
+        }
+        break;
+    case SDL_EVENT_MOUSE_BUTTON_UP:
+        if (event.button.button == SDL_BUTTON_LEFT)
+        {
+            _mouseRotating = false;
+        }
+        break;
     case SDL_EVENT_MOUSE_MOTION:
-        _camera->ApplyMotion(event.motion.xrel, event.motion.yrel);
+        if (_mouseRotating)
+        {
+            _camera->ApplyMotion(event.motion.xrel, event.motion.yrel);
+        }
         break;
     case SDL_EVENT_MOUSE_WHEEL:
         _camera->AddRadius(event.wheel.y);
@@ -120,6 +138,22 @@ SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
         if (_manualMovement)
         {
             HandleSnakeMovementQE(event.key.scancode);
+        }
+        else
+        {
+            switch (event.key.scancode)
+            {
+            case SDL_SCANCODE_DOWN:
+                _intervalLagMs += _intervalSum;
+                break;
+            case SDL_SCANCODE_UP:
+                _intervalLagMs -= _intervalSum;
+                if (_intervalLagMs <= 0)
+                {
+                    _intervalLagMs = 1;
+                }
+                break;
+            }
         }
         break;
     default:
@@ -138,6 +172,9 @@ void GameManager::HandleScanCode(SDL_Scancode scancode)
         break;
     case SDL_SCANCODE_M:
         SetManualMovement(!_manualMovement);
+        break;
+    case SDL_SCANCODE_C:
+        _renderer.SwapTheme();
         break;
     case SDL_SCANCODE_P:
         _isPaused = !_isPaused;
@@ -210,6 +247,11 @@ void GameManager::Quit()
 {
 }
 
+ImU32 GameManager::GetHUDColor()
+{
+    return _renderer.GetHUDColor();
+}
+
 void GameManager::RenderGame()
 {
     glm::vec3 center = glm::vec3(_dimensions) * 0.5f;
@@ -237,4 +279,37 @@ void GameManager::RenderGame()
     {
         _renderer.RenderPath(_path);
     }
+}
+
+void GameManager::RenderHUD()
+{
+    ImGui::Text("Score: %d", _score);
+    ImGui::Text("Cells: %dx%dx%d ", _dimensions.x, _dimensions.y, _dimensions.z);
+
+    ImGui::Text("M - manual movement");
+    ImGui::Text("Hold LMB - rotate");
+    ImGui::Text("Mouse wheel - zoom");
+
+    if (_manualMovement)
+    {
+        ImGui::Text("WASD - horizontal");
+        ImGui::Text("QE - vertical");
+    }
+    else
+    {
+        if (_isPaused)
+        {
+            ImGui::Text("Arrow up - Faster");
+            ImGui::Text("Arrow down - Slower");
+        }
+    }
+
+    ImGui::Text("P - pause");
+    if (_isPaused)
+    {
+        ImGui::Text("Right arrow - One step");
+    }
+
+    ImGui::Text("C - Color theme");
+    ImGui::Text("R - restart");
 }

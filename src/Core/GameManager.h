@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <imgui.h>
 #include "Renderer.h"
 #include "Map/GameMap.h"
 #include "Map/Grid.h"
@@ -27,10 +28,14 @@ public:
     void Iterate(uint64_t currentTime);
     SDL_AppResult HandleEvent(const SDL_Event& event);
     void RenderGame();
+    void RenderHUD();
     void Quit();
+    ImU32 GetHUDColor();
 
 private:
     uint64_t _currentGameStepIntervalMs;
+    uint64_t _intervalLagMs = 0;
+    uint64_t _intervalSum = 10;
 
     unsigned int _seed;
 
@@ -44,6 +49,7 @@ private:
     Renderer _renderer;
 
     bool _manualMovement;
+    bool _mouseRotating = false;
 
     IPathfinder* _pathfinder;
     Path _path;
@@ -52,6 +58,8 @@ private:
     GameMap _gameMap;
 
     Grid _grid;
+
+    int _score = 0;
 
     uint64_t _lastGameStepTime;
 

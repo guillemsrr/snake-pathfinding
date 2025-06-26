@@ -9,8 +9,6 @@
 
 #include "Pathfinding/Base/Path.h"
 
-#include <SDL3/SDL_log.h>
-
 SafeSnakePathfinder::~SafeSnakePathfinder()
 {
     delete _aStarPathdinder;
@@ -28,10 +26,6 @@ Path SafeSnakePathfinder::FindPath(IGraph* graph, Cell* start, Cell* end)
         {
             return pathToFood;
         }
-    }
-    else
-    {
-        SDL_Log("Invalid path to food, Game over");
     }
 
     for (Cell* neighbor : gameMapGraph->GetNeighbors(start))
@@ -52,15 +46,17 @@ Path SafeSnakePathfinder::FindPath(IGraph* graph, Cell* start, Cell* end)
     {
         Cell* neighbor = neighbors[rand() % neighbors.size()];
 
-        Path manhattahnPath;
-        manhattahnPath.Cells.push_back(start);
-        manhattahnPath.Cells.push_back(neighbor);
-        if (manhattahnPath.IsValid() && !IsPathTrappable(gameMapGraph, manhattahnPath))
+        Path manhattanPath;
+        manhattanPath.Cells.push_back(start);
+        manhattanPath.Cells.push_back(neighbor);
+
+        if (manhattanPath.IsValid() && !IsPathTrappable(gameMapGraph, manhattanPath))
         {
-            return manhattahnPath;
+            return manhattanPath;
         }
     }
 
+    //TODO: optimize
     // Find the safest cell with longest path
     Path longestPath = FindLongestSafePath(graph, start, gameMapGraph);
     return longestPath;

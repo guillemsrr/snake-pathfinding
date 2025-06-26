@@ -1,15 +1,40 @@
 ﻿#include "GameMap.h"
 #include "Elements/Snake.h"
 
-GameMap::GameMap(Grid& grid)
+GameMap::GameMap(Grid* grid): _grid(grid), _snake(std::make_unique<Snake>())
 {
-    _grid = &grid;
-    _snake = new Snake();
+}
+
+GameMap::GameMap(const GameMap& other)
+    : _grid(other._grid), _targetLocation(other._targetLocation)
+{
+    if (other._snake)
+    {
+        _snake = std::make_unique<Snake>(*other._snake);
+    }
+}
+
+GameMap& GameMap::operator=(const GameMap& other)
+{
+    if (this != &other)
+    {
+        _grid = other._grid;
+        _targetLocation = other._targetLocation;
+        if (other._snake)
+        {
+            _snake = std::make_unique<Snake>(*other._snake);
+        }
+        else
+        {
+            _snake.reset();
+        }
+    }
+    return *this;
 }
 
 Snake* GameMap::GetSnake() const
 {
-    return _snake;
+    return _snake.get();
 }
 
 Cell* GameMap::GetSnakeCell() const
@@ -22,6 +47,20 @@ Cell* GameMap::GetTargetCell() const
     return _grid->GetCell(_targetLocation);
 }
 
+std::vector<Cell*> GameMap::GetFreeCells() const
+{
+    std::vector<Cell*> freeCells;
+    for (Cell* const& cell : _grid->GetCells())
+    {
+        if (IsCellFree(cell))
+        {
+            freeCells.push_back(cell);
+        }
+    }
+
+    return freeCells;
+}
+
 std::vector<Cell*> GameMap::GetNeighbors(Cell* cell) const
 {
     std::vector<Cell*> cellNeighbors = _grid->GetNeighbors(cell);
@@ -29,13 +68,18 @@ std::vector<Cell*> GameMap::GetNeighbors(Cell* cell) const
 
     for (Cell* neighbor : cellNeighbors)
     {
-        if (!_snake->IsAnyBodyPartInPosition(neighbor->GetGridPosition()))
+        if (IsCellFree(neighbor))
         {
             validNeighbors.push_back(neighbor);
         }
     }
 
     return validNeighbors;
+}
+
+Cell* GameMap::GetCell(uvec3 position) const
+{
+    return _grid->GetCell(position);
 }
 
 void GameMap::ResetTargetLocation()
@@ -81,6 +125,11 @@ void GameMap::CheckCollisions()
     {
         //TODO
     }*/
+}
+
+bool GameMap::IsCellFree(const Cell* cell) const
+{
+    return !_snake->IsAnyBodyPartInPosition(cell->GetGridPosition());
 }
 
 void GameMap::Reset()

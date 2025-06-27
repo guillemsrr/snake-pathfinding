@@ -299,7 +299,7 @@ void GameManager::RenderHUD()
     }
     else
     {
-        if (_isPaused)
+        if (!_isPaused)
         {
             ImGui::Text("Arrow up - Faster");
             ImGui::Text("Arrow down - Slower");

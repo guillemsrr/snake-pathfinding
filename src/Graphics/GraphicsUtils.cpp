@@ -3,6 +3,8 @@
 #include <sstream>
 #include <iostream>
 
+#include <SDL3/SDL_log.h>
+
 #ifndef SHADER_DIR
 #define SHADER_DIR "/src/Graphics/Shaders"
 #endif
@@ -15,7 +17,7 @@ GLuint GraphicsUtils::LoadShader(const std::string& vertexPath, const std::strin
     std::ifstream vFile(fullVertexPath), fFile(fullFragmentPath);
     if (!vFile.is_open() || !fFile.is_open())
     {
-        std::cerr << "Failed to open shader files.\n";
+        SDL_Log("Failed to open shader files");
         return 0;
     }
 
@@ -39,7 +41,7 @@ GLuint GraphicsUtils::LoadShader(const std::string& vertexPath, const std::strin
     {
         char infoLog[512];
         glGetShaderInfoLog(vertex, 512, nullptr, infoLog);
-        std::cerr << "Vertex shader compile error:\n" << infoLog << std::endl;
+        SDL_Log("Vertex shader compile error: %s", infoLog);
     }
 
     GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
@@ -51,7 +53,7 @@ GLuint GraphicsUtils::LoadShader(const std::string& vertexPath, const std::strin
     {
         char infoLog[512];
         glGetShaderInfoLog(fragment, 512, nullptr, infoLog);
-        std::cerr << "Fragment shader compile error:\n" << infoLog << std::endl;
+        SDL_Log("Fragment shader compile error: %s", infoLog);
     }
 
     GLuint program = glCreateProgram();
@@ -64,7 +66,7 @@ GLuint GraphicsUtils::LoadShader(const std::string& vertexPath, const std::strin
     {
         char infoLog[512];
         glGetProgramInfoLog(program, 512, nullptr, infoLog);
-        std::cerr << "Shader linking error:\n" << infoLog << std::endl;
+        SDL_Log("Shader linking error: %s", infoLog);
     }
 
     glDeleteShader(vertex);

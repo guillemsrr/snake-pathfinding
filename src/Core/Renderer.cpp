@@ -39,8 +39,10 @@ void Renderer::RenderBackground()
 
 void Renderer::RenderGrid(const Grid& grid)
 {
+    glDepthMask(GL_FALSE);
     std::vector<Cell*> cells = grid.GetCells();
     RenderCells(cells, glm::vec4(_theme.CellColor, 0.02f));
+    glDepthMask(GL_TRUE);
 }
 
 void Renderer::RenderGameMap(const GameMap& gameMap)

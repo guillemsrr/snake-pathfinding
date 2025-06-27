@@ -68,6 +68,8 @@ void Renderer::RenderGameMap(const GameMap& gameMap)
         _cubeRenderer.Draw();
     }
 
+    glDepthMask(GL_FALSE);
+
     // Render snake head
     glm::vec3 headPos = glm::vec3(gameMap.GetSnake()->GetHeadLocation()) * 1.0f;
     glm::mat4 headModel = glm::translate(glm::mat4(1.0f), headPos);
@@ -85,10 +87,14 @@ void Renderer::RenderGameMap(const GameMap& gameMap)
     glUniformMatrix4fv(locMVP, 1, GL_FALSE, &targetMvp[0][0]);
     glUniform4f(locColor, _theme.TargetColor.r, _theme.TargetColor.g, _theme.TargetColor.b, 1.f);
     _cubeRenderer.Draw();
+
+    glDepthMask(GL_TRUE);
 }
 
 void Renderer::RenderPath(const Path& path)
 {
+    glDepthMask(GL_FALSE);
+
     glUseProgram(_generalShader);
 
     glm::mat4 view = _camera->GetViewMatrix();
@@ -124,6 +130,8 @@ void Renderer::RenderPath(const Path& path)
         glUniform4f(locColor, _theme.PathLineColor.r, _theme.PathLineColor.g, _theme.PathLineColor.b, 1.f);
         _cubeRenderer.Draw();
     }
+
+    glDepthMask(GL_TRUE);
 }
 
 void Renderer::RenderHorizontalDirection(const std::vector<Cell*>& cells)

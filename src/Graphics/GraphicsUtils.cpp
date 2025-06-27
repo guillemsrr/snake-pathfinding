@@ -6,7 +6,7 @@
 #include <SDL3/SDL_log.h>
 
 #ifndef SHADER_DIR
-#define SHADER_DIR "/src/Graphics/Shaders"
+#define SHADER_DIR "/Shaders"
 #endif
 
 GLuint GraphicsUtils::LoadShader(const std::string& vertexPath, const std::string& fragmentPath)

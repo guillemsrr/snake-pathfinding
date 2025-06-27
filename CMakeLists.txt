@@ -56,3 +56,5 @@ target_link_libraries(${PROJECT_NAME}
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     SHADER_DIR="${CMAKE_SOURCE_DIR}/src/Graphics/Shaders"
 )
+
+install(DIRECTORY src/Graphics/Shaders DESTINATION .)

@@ -29,6 +29,7 @@ public:
 
     void Init();
 
+    void PlayMoveSound(float duration);
     void Iterate(uint64_t currentTime);
     SDL_AppResult HandleEvent(const SDL_Event& event);
     void RenderGame();
@@ -42,7 +43,6 @@ private:
     uint64_t _intervalLagMs = 0;
 
     const uint64_t _intervalSum = 10;
-    const uint64_t minSoundInterval = 40;
     const uint64_t maxIntervalLag = 1000;
     float minNote = 100.f;
     float maxNote = 600.0f;
@@ -72,7 +72,7 @@ private:
 
     int _score = 0;
 
-    void Iterate();
+    void Iterate(float deltaTime);
 
     float CalculateFrequency();
 

@@ -50,58 +50,58 @@ void GameManager::Init()
     _gameMap.onSnakeReachedTarget = [this]()
     {
         _score += 1;
-        _audioEngine.PlayOneShotSound(1500.f, 0.1f, 0.1f);
+
+        float frequency = 1500.f;
+        frequency *= _audioEngine.GetVariation(0.3f);
+        _audioEngine.PlaySynthSoundMix(frequency, 0.1f);
     };
 
     _audioEngine.Init();
 }
 
+void GameManager::PlayMoveSound(float duration)
+{
+    Snake* snake = _gameMap.GetSnake();
+    uvec3 location = snake->GetHeadLocation();
+
+    if (_grid.IsLocationValid(location))
+    {
+        float frequency = CalculateFrequency();
+        _audioEngine.PlaySynthSoundMix(frequency, duration);
+    }
+}
+
 void GameManager::Iterate(uint64_t currentTime)
 {
+    uint64_t timeDifference = currentTime - _lastGameStepTime;
+    uint64_t interval = _currentGameStepIntervalMs + _intervalLagMs;
+    float deltaTime = static_cast<float>(interval) / 1000.f;
+
+    //_audioEngine.Iterate(deltaTime);
+
     if (_isPaused)
     {
         return;
     }
 
-    uint64_t timeDifference = currentTime - _lastGameStepTime;
-    uint64_t interval = _currentGameStepIntervalMs + _intervalLagMs;
-
-    Snake* snake = _gameMap.GetSnake();
-    uvec3 nextLocation = snake->GetNextHeadLocation();
-
     if (timeDifference > interval)
     {
         _lastGameStepTime = currentTime;
 
-        Iterate();
-
-        if ((interval > minSoundInterval))
-        {
-            if (_grid.IsLocationValid(nextLocation))
-            {
-                float freqMod = CalculateFrequency();
-                float duration = static_cast<float>(interval) / 1000.f;
-                _audioEngine.PlaySynthSound(freqMod, duration);
-            }
-        }
-    }
-
-    if ((interval <= minSoundInterval))
-    {
-        float freqMod = CalculateFrequency();
-        _audioEngine.PlaySynthSound(freqMod, 0.f);
+        Iterate(deltaTime);
     }
 }
 
-void GameManager::Iterate()
+void GameManager::Iterate(float deltaTime)
 {
     Snake* snake = _gameMap.GetSnake();
     uvec3 nextLocation = snake->GetNextHeadLocation();
     if (_grid.IsLocationValid(nextLocation))
     {
         snake->Move();
+        PlayMoveSound(deltaTime);
 
-        SDL_Log("moved to: %u, %u, %u", nextLocation.x, nextLocation.y, nextLocation.z);
+        //SDL_Log("moved to: %u, %u, %u", nextLocation.x, nextLocation.y, nextLocation.z);
     }
     else
     {
@@ -214,7 +214,15 @@ void GameManager::HandleScanCode(SDL_Scancode scancode)
     case SDL_SCANCODE_RIGHT:
         if (_isPaused)
         {
-            Iterate();
+            Iterate(0.f);
+            Snake* snake = _gameMap.GetSnake();
+            uvec3 location = snake->GetHeadLocation();
+
+            if (_grid.IsLocationValid(location))
+            {
+                float frequency = CalculateFrequency();
+                _audioEngine.PlaySynthSound(frequency, 1.f, 0.5f);
+            }
         }
         break;
     default: ;
@@ -363,7 +371,7 @@ float GameManager::CalculateFrequency()
     float lengthFactor = glm::mix(0.1f, 1.f, bodyRelation);
 
     float frequency = glm::mix(minNote, maxNote, spatialFreqFactor) * lengthFactor;
-    SDL_Log("Frequency: %f", frequency);
+    //SDL_Log("Frequency: %f", frequency);
 
     return frequency;
 }

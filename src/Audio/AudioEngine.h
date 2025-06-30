@@ -2,44 +2,37 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
-
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
-#include "Pathfinding/Algorithms/AStarPathfinder.h"
+#include <vector>
+#include "AudioData.h"
 
 #include <SDL3/SDL_audio.h>
 
 class AudioEngine
 {
 public:
+    ~AudioEngine();
     void Init();
 
-    void PlaySynthSound(float frequency, float duration);
-    void PlayOneShotSound(float frequency, float duration, float volume);
+    void PlaySynthSoundMix(float frequency, float duration, float volume = 1.f);
+    void PlaySynthSound(float frequency, float duration, float volume = 1.f);
+
+    float GetVariation(float detuneAmount);
 
 private:
-    SDL_AudioStream* stream = nullptr;
+    static void SDLCALL FeedAudioCallback(void* userdata, SDL_AudioStream* stream, int additional, int total);
 
-    int current_sine_sample = 0;
-    int sampleRate = 8000;
-    int minNumSamples = 512;
-    float synthPhase = 0.0f;
-    float currentFreq = 440.0f;
+    SDL_AudioStream* _stream = nullptr;
 
-    float GetHarmonic(glm::vec3 harmonicAxis) const;
+    std::vector<AudioData> _activeAudios;
+
+    int _sampleRate = 48000;
+
+    const float _minDuration = 0.1f;
+    const float _baseVolume = 0.5f;
+
+    float GetHarmonic(float phase) const;
     int GetNumSamples(float duration) const;
     void SynthesizeAndQueue(float frequency, float duration, float& phase, float volume);
     float ComputeEnvelope(float tSec, float duration) const;
-    float GetVariation(float detuneAmount);
     float FrequencyToPhaseRad(float frequency) const;
 };

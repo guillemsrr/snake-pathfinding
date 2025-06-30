@@ -21,7 +21,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
-        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
+        SDL_Log("Couldn't initialize Video: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
+    if (!SDL_Init(SDL_INIT_AUDIO))
+    {
+        SDL_Log("Couldn't initialize Audio: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
@@ -110,7 +116,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     appStateInstance->GameInstance = new GameManager();
     appStateInstance->GameInstance->Init();
-    
+
     return SDL_APP_CONTINUE;
 }
 

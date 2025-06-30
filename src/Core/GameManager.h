@@ -4,6 +4,9 @@
 
 #include <imgui.h>
 #include "Renderer.h"
+
+#include "Audio/AudioEngine.h"
+
 #include "Map/GameMap.h"
 #include "Map/Grid.h"
 #include "Map/MapGenerator.h"
@@ -25,6 +28,7 @@ public:
     ~GameManager();
 
     void Init();
+
     void Iterate(uint64_t currentTime);
     SDL_AppResult HandleEvent(const SDL_Event& event);
     void RenderGame();
@@ -33,9 +37,15 @@ public:
     ImU32 GetHUDColor();
 
 private:
+    uint64_t _lastGameStepTime = 0;
     uint64_t _currentGameStepIntervalMs;
     uint64_t _intervalLagMs = 0;
-    uint64_t _intervalSum = 10;
+
+    const uint64_t _intervalSum = 10;
+    const uint64_t minSoundInterval = 40;
+    const uint64_t maxIntervalLag = 1000;
+    float minNote = 100.f;
+    float maxNote = 600.0f;
 
     unsigned int _seed;
 
@@ -47,6 +57,7 @@ private:
     uvec3 _dimensions = {_size, _size, _size};
 
     Renderer _renderer;
+    AudioEngine _audioEngine;
 
     bool _manualMovement;
     bool _mouseRotating = false;
@@ -61,9 +72,9 @@ private:
 
     int _score = 0;
 
-    uint64_t _lastGameStepTime;
-
     void Iterate();
+
+    float CalculateFrequency();
 
     void SetManualMovement(bool isManual);
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Guillem Serra. All Rights Reserved.
 
 #include "GameManager.h"
+#include <algorithm>
 #include <cstdlib>
 #include <ctime>
 #include <imgui.h>
@@ -49,7 +50,10 @@ void GameManager::Init()
     _gameMap.onSnakeReachedTarget = [this]()
     {
         _score += 1;
+        _audioEngine.PlayOneShotSound(1500.f, 0.1f, 0.1f);
     };
+
+    _audioEngine.Init();
 }
 
 void GameManager::Iterate(uint64_t currentTime)
@@ -59,21 +63,45 @@ void GameManager::Iterate(uint64_t currentTime)
         return;
     }
 
-    uint64_t targetTime = _lastGameStepTime + _currentGameStepIntervalMs + _intervalLagMs;
-    if (currentTime > targetTime)
+    uint64_t timeDifference = currentTime - _lastGameStepTime;
+    uint64_t interval = _currentGameStepIntervalMs + _intervalLagMs;
+
+    Snake* snake = _gameMap.GetSnake();
+    uvec3 nextLocation = snake->GetNextHeadLocation();
+
+    if (timeDifference > interval)
     {
         _lastGameStepTime = currentTime;
 
         Iterate();
+
+        if ((interval > minSoundInterval))
+        {
+            if (_grid.IsLocationValid(nextLocation))
+            {
+                float freqMod = CalculateFrequency();
+                float duration = static_cast<float>(interval) / 1000.f;
+                _audioEngine.PlaySynthSound(freqMod, duration);
+            }
+        }
+    }
+
+    if ((interval <= minSoundInterval))
+    {
+        float freqMod = CalculateFrequency();
+        _audioEngine.PlaySynthSound(freqMod, 0.f);
     }
 }
 
 void GameManager::Iterate()
 {
-    uvec3 nextLocation = _gameMap.GetSnake()->GetNextHeadLocation();
+    Snake* snake = _gameMap.GetSnake();
+    uvec3 nextLocation = snake->GetNextHeadLocation();
     if (_grid.IsLocationValid(nextLocation))
     {
-        _gameMap.GetSnake()->Move();
+        snake->Move();
+
+        SDL_Log("moved to: %u, %u, %u", nextLocation.x, nextLocation.y, nextLocation.z);
     }
     else
     {
@@ -91,11 +119,11 @@ void GameManager::Iterate()
         if (_path.IsValid())
         {
             uvec3 direction = _path.GetSecond()->GetGridPosition() - headCell->GetGridPosition();
-            _gameMap.GetSnake()->SetDirection(direction);
+            snake->SetDirection(direction);
         }
         else
         {
-            _gameMap.GetSnake()->SetDirection(Directions::None);
+            snake->SetDirection(Directions::None);
         }
     }
 }
@@ -145,10 +173,12 @@ SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
             {
             case SDL_SCANCODE_DOWN:
                 _intervalLagMs += _intervalSum;
+                _intervalLagMs = std::min(_intervalLagMs, maxIntervalLag);
                 break;
             case SDL_SCANCODE_UP:
                 _intervalLagMs -= _intervalSum;
-                if (_intervalLagMs <= 0)
+
+                if (_intervalLagMs <= 0 || _intervalLagMs > maxIntervalLag)
                 {
                     _intervalLagMs = 1;
                 }
@@ -314,4 +344,26 @@ void GameManager::RenderHUD()
 
     ImGui::Text("C - Color theme");
     ImGui::Text("R - restart");
+}
+
+float GameManager::CalculateFrequency()
+{
+    Snake* snake = _gameMap.GetSnake();
+    uvec3 position = snake->GetHeadLocation();
+    glm::vec3 normalizedPosition = glm::vec3(position) / glm::vec3(_dimensions);
+    float fx = glm::mix(0.01f, 1.f, normalizedPosition.x);
+    float fy = glm::mix(0.01f, 2.f, normalizedPosition.y);
+    float fz = glm::mix(0.01f, 1.f, normalizedPosition.z);
+
+    float spatialFreqFactor = fx * fy * fz;
+    //spatialFreqFactor = glm::clamp(spatialFreqFactor, 0.f, 1.f);
+
+    int bodyCount = snake->GetBody().size();
+    float bodyRelation = glm::clamp(bodyCount / 10.0f, 0.0f, 1.0f);
+    float lengthFactor = glm::mix(0.1f, 1.f, bodyRelation);
+
+    float frequency = glm::mix(minNote, maxNote, spatialFreqFactor) * lengthFactor;
+    SDL_Log("Frequency: %f", frequency);
+
+    return frequency;
 }

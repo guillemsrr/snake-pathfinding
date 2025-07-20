@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "Graphics/CubeRenderer.h"
-#include "Graphics/Color/Theme.h"
+#include "Graphics/Theme.h"
 
 #include "Map/Cell.h"
 

@@ -6,7 +6,7 @@
 
 #include "Graphics/Camera.h"
 #include "Graphics/GraphicsUtils.h"
-#include "Graphics/Color/Themes.h"
+#include "Graphics/Themes.h"
 
 #include "Map/Grid.h"
 #include "Map/Cell.h"

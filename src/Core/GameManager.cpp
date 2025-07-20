@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <imgui.h>
-#include "GameConfig.h"
 #include "Elements/Snake.h"
 
 #include "Graphics/Camera.h"
@@ -15,21 +14,22 @@
 
 #include "Utils/Directions.h"
 
-GameManager::GameManager(): _renderer(nullptr), _lastGameStepTime(0)
+GameManager::GameManager(): _currentGameStepIntervalMs(0), _camera(nullptr), _renderer(nullptr),
+                            _manualMovement(false), _pathfinder(nullptr)
 {
     _seed = time(nullptr);
     srand(_seed);
 }
 
-GameManager::~GameManager()
+void GameManager::Init(SDL_Window* window)
 {
-}
+    GameBase::Init(window);
 
-void GameManager::Init()
-{
-    _lastGameStepTime = SDL_GetTicks();
-
-    _camera = new Camera(glm::vec3(0, 0, 5), glm::radians(45.0f), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
+    _lastGameStepTime = 0.f;
+    int windowWidth, windowHeight;
+    SDL_GetWindowSizeInPixels(window, &windowWidth, &windowHeight);
+    float aspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
+    _camera = new Camera(glm::vec3(0, 0, 5), glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
 
     _grid = Grid();
 
@@ -71,18 +71,18 @@ void GameManager::PlayMoveSound(float duration)
     }
 }
 
-void GameManager::Iterate(uint64_t currentTime)
+void GameManager::Update(float deltaTime)
 {
-    uint64_t timeDifference = currentTime - _lastGameStepTime;
-    uint64_t interval = _currentGameStepIntervalMs + _intervalLagMs;
-    float deltaTime = static_cast<float>(interval) / 1000.f;
-
-    //_audioEngine.Iterate(deltaTime);
-
     if (_isPaused)
     {
         return;
     }
+
+    currentTime += deltaTime;
+    float timeDifference = currentTime - _lastGameStepTime;
+    float interval = _currentGameStepIntervalMs + _intervalLagMs;
+
+    //_audioEngine.Iterate(deltaTime);
 
     if (timeDifference > interval)
     {
@@ -128,18 +128,10 @@ void GameManager::Iterate(float deltaTime)
     }
 }
 
-SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
+void GameManager::HandleEvent(const SDL_Event& event)
 {
-    if (event.key.scancode == SDL_SCANCODE_ESCAPE)
-    {
-        return SDL_APP_SUCCESS;
-    }
-
     switch (event.type)
     {
-    case SDL_EVENT_QUIT:
-    case SDL_SCANCODE_ESCAPE:
-        return SDL_APP_SUCCESS;
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
         if (event.button.button == SDL_BUTTON_LEFT)
         {
@@ -180,7 +172,7 @@ SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
 
                 if (_intervalLagMs <= 0 || _intervalLagMs > maxIntervalLag)
                 {
-                    _intervalLagMs = 1;
+                    _intervalLagMs = 0.f;
                 }
                 break;
             }
@@ -189,7 +181,6 @@ SDL_AppResult GameManager::HandleEvent(const SDL_Event& event)
     default:
         break;
     }
-    return SDL_APP_CONTINUE;
 }
 
 void GameManager::HandleScanCode(SDL_Scancode scancode)
@@ -292,7 +283,7 @@ ImU32 GameManager::GetHUDColor()
     return _renderer.GetHUDColor();
 }
 
-void GameManager::RenderGame()
+void GameManager::Render()
 {
     glm::vec3 center = glm::vec3(_dimensions) * 0.5f;
     _camera->SetTarget(center);
@@ -321,7 +312,7 @@ void GameManager::RenderGame()
     }
 }
 
-void GameManager::RenderHUD()
+void GameManager::RenderUI()
 {
     ImGui::Text("Score: %d", _score);
     ImGui::Text("Cells: %dx%dx%d ", _dimensions.x, _dimensions.y, _dimensions.z);

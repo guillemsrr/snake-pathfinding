@@ -7,6 +7,8 @@
 
 #include "Audio/AudioEngine.h"
 
+#include "core/GameBase.h"
+
 #include "Map/GameMap.h"
 #include "Map/Grid.h"
 #include "Map/MapGenerator.h"
@@ -18,32 +20,31 @@
 class IPathfinder;
 class Camera;
 
-class GameManager
+class GameManager : public SerraEngine::GameBase
 {
-    static constexpr uint64_t AI_GAME_STEP_INTERVAL_MS = 1;
-    static constexpr uint64_t MANUAL_GAME_STEP_INTERVAL_MS = 400;
+    static constexpr float AI_GAME_STEP_INTERVAL_MS = 0.001f;
+    static constexpr float MANUAL_GAME_STEP_INTERVAL_MS = 0.05f;
 
 public:
     GameManager();
-    ~GameManager();
 
-    void Init();
+    virtual void Init(SDL_Window* window);
+
+    void Update(float deltaTime) override;
+    void HandleEvent(const SDL_Event& e) override;
+    void Render() override;
 
     void PlayMoveSound(float duration);
-    void Iterate(uint64_t currentTime);
-    SDL_AppResult HandleEvent(const SDL_Event& event);
-    void RenderGame();
-    void RenderHUD();
-    void Quit();
-    ImU32 GetHUDColor();
+    void Quit() override;
 
 private:
-    uint64_t _lastGameStepTime = 0;
-    uint64_t _currentGameStepIntervalMs;
-    uint64_t _intervalLagMs = 0;
+    float _lastGameStepTime = 0;
+    float _currentGameStepIntervalMs;
+    float _intervalLagMs = 0;
+    const float _intervalSum = 0.01f;
+    const float maxIntervalLag = 2.f;
+    float currentTime = 0;
 
-    const uint64_t _intervalSum = 10;
-    const uint64_t maxIntervalLag = 1000;
     float minNote = 100.f;
     float maxNote = 600.0f;
 
@@ -72,9 +73,10 @@ private:
 
     int _score = 0;
 
-    void Iterate(float deltaTime);
-
     float CalculateFrequency();
+    void Iterate(float deltaTime);
+    void RenderUI() override;
+    ImU32 GetHUDColor() override;
 
     void SetManualMovement(bool isManual);
 

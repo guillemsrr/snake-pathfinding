@@ -7,7 +7,7 @@
 
 AudioEngine::~AudioEngine()
 {
-    SDL_ClearAudioStream(_stream);
+    //SDL_ClearAudioStream(_stream);
 }
 
 void AudioEngine::Init()

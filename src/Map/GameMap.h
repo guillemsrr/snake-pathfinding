@@ -5,9 +5,9 @@
 #include <memory>
 #include "Grid.h"
 
-#include "Pathfinding/Base/IGraph.h"
+#include "Elements/Snake.h"
 
-class Snake;
+#include "Pathfinding/Base/IGraph.h"
 
 class GameMap final : public IGraph
 {
@@ -18,7 +18,7 @@ public:
     GameMap& operator=(const GameMap& other);
 
     std::function<void()> onSnakeReachedTarget;
-    
+
     Snake* GetSnake() const;
     Cell* GetSnakeCell() const;
     Cell* GetTargetCell() const;
@@ -40,7 +40,7 @@ public:
 
 private:
     Grid* _grid = nullptr;
-    std::unique_ptr<Snake>_snake;
+    std::unique_ptr<Snake> _snake;
 
     uvec3 _targetLocation = {};
 };

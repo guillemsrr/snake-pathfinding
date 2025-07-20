@@ -4,10 +4,8 @@ project(Snake-AI-3D)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Vcpkg toolchain file
-if(DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
-endif()
+# Add SerraEngine as a subdirectory
+add_subdirectory(../SerraEngine SerraEngineBuild)
 
 # Find packages
 find_package(SDL3 CONFIG REQUIRED)
@@ -33,6 +31,7 @@ set(IMGUI_SOURCES
 # Create executable
 add_executable(${PROJECT_NAME}
     ${SOURCES}
+    ${GAME_SOURCES}
     ${IMGUI_SOURCES}
 )
 
@@ -50,6 +49,12 @@ target_link_libraries(${PROJECT_NAME}
         OpenGL::GL
         glad::glad
         glm::glm
+	SerraEngine
+)
+
+# Include engine headers
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ../SerraEngine/include
 )
 
 # Compile-time definitions

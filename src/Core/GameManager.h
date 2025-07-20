@@ -17,6 +17,7 @@
 
 #include <SDL3/SDL.h>
 
+class OrbitalCameraInput;
 class IPathfinder;
 class Camera;
 
@@ -50,15 +51,13 @@ private:
 
     unsigned int _seed;
 
-    Camera* _camera;
-
     bool _isPaused = false;
 
     const int _size = 10;
     uvec3 _dimensions = {_size, _size, _size};
 
-    Renderer _renderer;
     AudioEngine _audioEngine;
+    Renderer _renderer;
 
     bool _manualMovement;
     bool _mouseRotating = false;
@@ -70,6 +69,8 @@ private:
     GameMap _gameMap;
 
     Grid _grid;
+
+    OrbitalCameraInput* _orbitalCameraInput;
 
     int _score = 0;
 

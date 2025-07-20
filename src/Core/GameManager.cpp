@@ -10,12 +10,14 @@
 #include "Graphics/Camera.h"
 #include "Graphics/GraphicsUtils.h"
 
+#include "input/OrbitalCameraInput.h"
+
 #include "Pathfinding/Algorithms/SafeSnakePathfinder.h"
 
 #include "Utils/Directions.h"
 
-GameManager::GameManager(): _currentGameStepIntervalMs(0), _camera(nullptr), _renderer(nullptr),
-                            _manualMovement(false), _pathfinder(nullptr)
+GameManager::GameManager(): _currentGameStepIntervalMs(0), _renderer(nullptr), _manualMovement(false),
+                            _pathfinder(nullptr)
 {
     _seed = time(nullptr);
     srand(_seed);
@@ -26,20 +28,20 @@ void GameManager::Init(SDL_Window* window)
     GameBase::Init(window);
 
     _lastGameStepTime = 0.f;
-    int windowWidth, windowHeight;
-    SDL_GetWindowSizeInPixels(window, &windowWidth, &windowHeight);
-    float aspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
-    _camera = new Camera(glm::vec3(0, 0, 5), glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+
+    _renderer = Renderer(_camera);
+    _rendererBase = _renderer;
 
     _grid = Grid();
-
     _grid.SetDimensions(_dimensions);
+
+    _orbitalCameraInput = new OrbitalCameraInput(_camera);
+    AddInputHandler(_orbitalCameraInput);
 
     _mapGenerator = MapGenerator();
     _mapGenerator.Generate(_grid);
 
     _gameMap = GameMap(&_grid);
-    _renderer = Renderer(_camera);
 
     _gameMap.ResetTargetLocation();
     _pathfinder = new SafeSnakePathfinder();
@@ -130,29 +132,10 @@ void GameManager::Iterate(float deltaTime)
 
 void GameManager::HandleEvent(const SDL_Event& event)
 {
+    GameBase::HandleEvent(event);
+
     switch (event.type)
     {
-    case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        if (event.button.button == SDL_BUTTON_LEFT)
-        {
-            _mouseRotating = true;
-        }
-        break;
-    case SDL_EVENT_MOUSE_BUTTON_UP:
-        if (event.button.button == SDL_BUTTON_LEFT)
-        {
-            _mouseRotating = false;
-        }
-        break;
-    case SDL_EVENT_MOUSE_MOTION:
-        if (_mouseRotating)
-        {
-            _camera->ApplyMotion(event.motion.xrel, event.motion.yrel);
-        }
-        break;
-    case SDL_EVENT_MOUSE_WHEEL:
-        _camera->AddRadius(event.wheel.y);
-        break;
     case SDL_EVENT_KEY_DOWN:
         HandleScanCode(event.key.scancode);
         if (_manualMovement)

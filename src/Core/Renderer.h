@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Graphics/CubeRenderer.h"
+#include "graphics/RendererBase.h"
 #include "Graphics/Theme.h"
 
 #include "Map/Cell.h"
@@ -14,7 +15,7 @@ class GameMap;
 class Grid;
 class Camera;
 
-class Renderer
+class Renderer: public RendererBase
 {
 public:
     Renderer(Camera* camera);
@@ -31,7 +32,6 @@ public:
     ImU32 GetHUDColor();
 
 private:
-    Camera* _camera;
     unsigned int _generalShader;
 
     CubeRenderer _cubeRenderer;

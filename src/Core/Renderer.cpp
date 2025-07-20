@@ -16,10 +16,8 @@
 
 #include <SDL3/SDL_log.h>
 
-Renderer::Renderer(Camera* camera)
+Renderer::Renderer(Camera* camera): RendererBase(camera)
 {
-    _camera = camera;
-
     _cubeRenderer.Init();
 
     _generalShader = GraphicsUtils::LoadShader("basic.vert", "basic.frag");

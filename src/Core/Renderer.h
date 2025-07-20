@@ -20,7 +20,7 @@ class Renderer: public RendererBase
 public:
     Renderer(Camera* camera);
 
-    void RenderBackground();
+    void RenderBackground() override;
     void RenderGrid(const Grid& grid);
     void RenderGameMap(const GameMap& gameMap);
     void RenderPath(const Path& path);
@@ -28,8 +28,8 @@ public:
     void RenderVerticalDirection(const std::vector<Cell*>& cells);
     void RenderForwardDirection(const std::vector<Cell*>& cells);
 
+    ImU32 GetHUDColor() override;
     void SwapTheme();
-    ImU32 GetHUDColor();
 
 private:
     unsigned int _generalShader;

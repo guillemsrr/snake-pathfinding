@@ -57,7 +57,7 @@ private:
     uvec3 _dimensions = {_size, _size, _size};
 
     AudioEngine _audioEngine;
-    Renderer _renderer;
+    Renderer* _renderer;
 
     bool _manualMovement;
     bool _mouseRotating = false;
@@ -77,7 +77,6 @@ private:
     float CalculateFrequency();
     void Iterate(float deltaTime);
     void RenderUI() override;
-    ImU32 GetHUDColor() override;
 
     void SetManualMovement(bool isManual);
 

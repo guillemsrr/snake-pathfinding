@@ -29,8 +29,8 @@ void GameManager::Init(SDL_Window* window)
 
     _lastGameStepTime = 0.f;
 
-    _renderer = Renderer(_camera);
-    _rendererBase = _renderer;
+    _renderer = new Renderer(_camera);
+    SetRenderer(_renderer);
 
     _grid = Grid();
     _grid.SetDimensions(_dimensions);
@@ -180,7 +180,7 @@ void GameManager::HandleScanCode(SDL_Scancode scancode)
         SetManualMovement(!_manualMovement);
         break;
     case SDL_SCANCODE_C:
-        _renderer.SwapTheme();
+        _renderer->SwapTheme();
         break;
     case SDL_SCANCODE_P:
         _isPaused = !_isPaused;
@@ -261,37 +261,32 @@ void GameManager::Quit()
 {
 }
 
-ImU32 GameManager::GetHUDColor()
-{
-    return _renderer.GetHUDColor();
-}
-
 void GameManager::Render()
 {
     glm::vec3 center = glm::vec3(_dimensions) * 0.5f;
     _camera->SetTarget(center);
     _camera->UpdatePosition();
 
-    _renderer.RenderBackground();
-    _renderer.RenderGrid(_grid);
+    _renderer->RenderBackground();
+    _renderer->RenderGrid(_grid);
     if (_manualMovement)
     {
         std::vector<Cell*> horizontalCells = _grid.GetCellsHorizontal(_gameMap.GetSnakeCell());
-        _renderer.RenderHorizontalDirection(horizontalCells);
+        _renderer->RenderHorizontalDirection(horizontalCells);
 
         std::vector<Cell*> verticalCells = _grid.GetCellsVertical(_gameMap.GetSnakeCell());
-        _renderer.RenderHorizontalDirection(verticalCells);
+        _renderer->RenderHorizontalDirection(verticalCells);
 
         std::vector<Cell*> forwardDirectionCells = _grid.GetCellsLine(_gameMap.GetSnakeCell(),
                                                                       _gameMap.GetSnake()->GetDirection());
-        _renderer.RenderForwardDirection(forwardDirectionCells);
+        _renderer->RenderForwardDirection(forwardDirectionCells);
     }
 
-    _renderer.RenderGameMap(_gameMap);
+    _renderer->RenderGameMap(_gameMap);
 
     if (_path.IsValid())
     {
-        _renderer.RenderPath(_path);
+        _renderer->RenderPath(_path);
     }
 }
 

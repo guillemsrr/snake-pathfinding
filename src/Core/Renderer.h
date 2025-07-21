@@ -4,9 +4,9 @@
 #include <imgui.h>
 #include <vector>
 
-#include "Graphics/CubeRenderer.h"
 #include "graphics/RendererBase.h"
 #include "Graphics/Theme.h"
+#include "graphics/shapes/CubeRenderer.h"
 
 #include "Map/Cell.h"
 

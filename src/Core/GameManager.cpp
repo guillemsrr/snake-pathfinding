@@ -5,6 +5,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <imgui.h>
+
+#include "Audio/SynthAudioEngine.h"
+
 #include "Elements/Snake.h"
 
 #include "Graphics/Camera.h"
@@ -16,8 +19,8 @@
 
 #include "Utils/Directions.h"
 
-GameManager::GameManager(): _currentGameStepIntervalMs(0), _renderer(nullptr), _manualMovement(false),
-                            _pathfinder(nullptr)
+GameManager::GameManager(): _currentGameStepIntervalMs(0), _synthAudioEngine(nullptr), _renderer(nullptr),
+                            _manualMovement(false), _pathfinder(nullptr), _orbitalCameraInput(nullptr)
 {
     _seed = time(nullptr);
     srand(_seed);
@@ -31,6 +34,9 @@ void GameManager::Init(SDL_Window* window)
 
     _renderer = new Renderer(_camera);
     SetRenderer(_renderer);
+
+    _synthAudioEngine = new SynthAudioEngine();
+    SetAudioEngine(_synthAudioEngine);
 
     _grid = Grid();
     _grid.SetDimensions(_dimensions);
@@ -54,11 +60,9 @@ void GameManager::Init(SDL_Window* window)
         _score += 1;
 
         float frequency = 1500.f;
-        frequency *= _audioEngine.GetVariation(0.3f);
-        _audioEngine.PlaySynthSoundMix(frequency, 0.1f);
+        frequency *= _synthAudioEngine->GetVariation(0.3f);
+        _synthAudioEngine->PlaySynthSoundMix(frequency, 0.1f);
     };
-
-    _audioEngine.Init();
 }
 
 void GameManager::PlayMoveSound(float duration)
@@ -69,7 +73,7 @@ void GameManager::PlayMoveSound(float duration)
     if (_grid.IsLocationValid(location))
     {
         float frequency = CalculateFrequency();
-        _audioEngine.PlaySynthSoundMix(frequency, duration);
+        _synthAudioEngine->PlaySynthSoundMix(frequency, duration);
     }
 }
 
@@ -195,7 +199,7 @@ void GameManager::HandleScanCode(SDL_Scancode scancode)
             if (_grid.IsLocationValid(location))
             {
                 float frequency = CalculateFrequency();
-                _audioEngine.PlaySynthSound(frequency, 1.f, 0.5f);
+                _synthAudioEngine->PlaySynthSound(frequency, 1.f, 0.5f);
             }
         }
         break;

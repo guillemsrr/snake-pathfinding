@@ -17,6 +17,7 @@
 
 #include <SDL3/SDL.h>
 
+class SynthAudioEngine;
 class OrbitalCameraInput;
 class IPathfinder;
 class Camera;
@@ -56,7 +57,7 @@ private:
     const int _size = 10;
     uvec3 _dimensions = {_size, _size, _size};
 
-    AudioEngine _audioEngine;
+    SynthAudioEngine* _synthAudioEngine;
     Renderer* _renderer;
 
     bool _manualMovement;

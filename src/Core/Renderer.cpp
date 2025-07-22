@@ -20,7 +20,7 @@ Renderer::Renderer(Camera* camera): RendererBase(camera)
 {
     _cubeRenderer.Init();
 
-    _generalShader = GraphicsUtils::LoadShader("basic.vert", "basic.frag");
+    _generalShader = GraphicsUtils::LoadShader("default.vert", "default.frag");
     if (_generalShader == 0)
     {
         SDL_Log("Failed to load shader program");

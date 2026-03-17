@@ -4,7 +4,7 @@
 #include <glm/geometric.hpp>
 #include <algorithm>
 
-Snake::Snake(): _direction()
+Snake::Snake()
 {
     Reset();
 }

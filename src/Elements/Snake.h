@@ -3,9 +3,11 @@
 #pragma once
 
 #include <vector>
+#include <core/Actor.h>
+
 #include "Utils/Types.h"
 
-class Snake
+class Snake : public Actor
 {
 public:
     Snake();

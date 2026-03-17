@@ -51,7 +51,6 @@ void GameManager::Init(SDL_Window* window)
 
     _gameMap.ResetTargetLocation();
     _pathfinder = new SafeSnakePathfinder();
-    _path = _pathfinder->FindPath(&_gameMap, _gameMap.GetSnakeCell(), _gameMap.GetTargetCell());
 
     SetManualMovement(false);
 
@@ -118,6 +117,7 @@ void GameManager::Iterate(float deltaTime)
 
     Cell* headCell = _gameMap.GetSnakeCell();
     Cell* targetCell = _gameMap.GetTargetCell();
+
     _path = _pathfinder->FindPath(&_gameMap, headCell, targetCell);
 
     if (!_manualMovement)

@@ -160,7 +160,7 @@ void Renderer::SwapTheme()
     }
 }
 
-ImU32 Renderer::GetHUDColor()
+ImU32 Renderer::GetHUDTextColor()
 {
     if (_isLight)
     {

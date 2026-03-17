@@ -28,7 +28,7 @@ public:
     void RenderVerticalDirection(const std::vector<Cell*>& cells);
     void RenderForwardDirection(const std::vector<Cell*>& cells);
 
-    ImU32 GetHUDColor() override;
+    ImU32 GetHUDTextColor() override;
     void SwapTheme();
 
 private:

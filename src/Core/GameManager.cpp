@@ -199,7 +199,7 @@ void GameManager::HandleScanCode(SDL_Scancode scancode)
             if (_grid.IsLocationValid(location))
             {
                 float frequency = CalculateFrequency();
-                _synthAudioEngine->PlaySynthSound(frequency, 1.f, 0.5f);
+                _synthAudioEngine->PlaySynthSoundMix(frequency, 1.f, 0.5f);
             }
         }
         break;

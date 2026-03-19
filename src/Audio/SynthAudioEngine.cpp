@@ -2,40 +2,6 @@
 #include <random>
 #include <SDL3/SDL_init.h>
 
-void SynthAudioEngine::PlaySynthSound(float frequency, float duration, float volume)
-{
-    SDL_ClearAudioStream(_stream);
-
-    float synthPhaseTemp = 0.0f;
-    SynthesizeAndQueue(frequency, duration, synthPhaseTemp, volume);
-}
-
-void SynthAudioEngine::SynthesizeAndQueue(float frequency, float duration, float& phase, const float volume)
-{
-    int numSamples = GetNumSamples(duration);
-    const int bufferSizeBytes = sizeof(float) * numSamples;
-
-    std::vector<float> buffer(numSamples);
-
-    float phaseIncrement = FrequencyToPhaseRad(frequency) / _sampleRate;
-    phaseIncrement *= GetVariation(0.1f);
-
-    for (int i = 0; i < numSamples; ++i)
-    {
-        float tSec = static_cast<float>(i) / _sampleRate;
-        float envelope = ComputeEnvelope(tSec, duration);
-        float harmonic = GetHarmonic(phase);
-        buffer[i] = volume * envelope * harmonic;
-
-        phase += phaseIncrement;
-        if (phase > 2.f * SDL_PI_F)
-        {
-            phase -= 2.f * SDL_PI_F;
-        }
-    }
-
-    SDL_PutAudioStreamData(_stream, buffer.data(), bufferSizeBytes);
-}
 
 float SynthAudioEngine::ComputeEnvelope(float tSec, float duration) const
 {
@@ -75,7 +41,7 @@ float SynthAudioEngine::FrequencyToPhaseRad(float frequency) const
 
 void SynthAudioEngine::HandleAudio(AudioData& voice, float* samples, int count)
 {
-    AudioEngine::HandleAudio(voice, samples, count);
+    //AudioEngine::HandleAudio(voice, samples, count);
 
     float phaseIncrement = FrequencyToPhaseRad(voice.Frequency) / static_cast<float>(_sampleRate);
     for (int i = 0; i < count; ++i)
